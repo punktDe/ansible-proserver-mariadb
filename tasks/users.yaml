@@ -1,0 +1,17 @@
+---
+- name: Create users and database grants
+  mysql_user:
+    name: "{{ username }}"
+    password: "{{ password }}"
+    host: "{{ host }}"
+    priv: "{{ priv }}"
+  loop_control:
+    label: "{{ username }}@{{ host }} priv={{ priv }}"
+  vars:
+    username: "{{ item.0.username }}"
+    password: "{{ item.0.password }}"
+    host: "{{ item.1 }}"
+    priv: "{{ '/'.join(item.0.privileges.values()) }}"
+  with_subelements:
+    - "{{ mariadb.users.values()|subelem_dicts_to_list('hosts') }}"
+    - hosts

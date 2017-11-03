@@ -1,0 +1,13 @@
+---
+- name: Create databases
+  mysql_db:
+    name: "{{ item.name }}"
+    encoding: "{{ encoding }}"
+    collation: "{{ collation }}"
+  loop_control:
+    label: "{{ item.name }} encoding={{ encoding }} collation={{ collation }}"
+  vars:
+    encoding: "{{ item.encoding|default(mariadb.database_defaults.encoding, true) }}"
+    collation: "{{ item.collation|default(mariadb.database_defaults.collation, true) }}"
+  when: item
+  with_items: "{{ mariadb.databases.values() }}"

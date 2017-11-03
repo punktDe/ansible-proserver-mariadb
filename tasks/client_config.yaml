@@ -1,0 +1,29 @@
+---
+- name: Read root-password
+  slurp:
+    src: "{{ item }}"
+  with_items:
+    - /usr/local/etc/mysql-password
+  register: slurp_result
+
+- name: Write root password to cli client configuration file
+  blockinfile:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: 0600
+    create: yes
+    block: |
+      [client]
+      password={{ slurp_result.results.0.content|b64decode|trim }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: MariaDB root password"
+  loop_control:
+    label: "{{ item.path }}"
+  with_items:
+    -
+      path: /root/.my.cnf
+      owner: root
+      group: wheel
+    - path: "/home/{{ ansible_hostname }}/.my.cnf"
+      owner: "{{ ansible_hostname }}"
+      group: "{{ ansible_hostname }}"
