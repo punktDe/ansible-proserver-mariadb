@@ -85,12 +85,17 @@ mariadb:
   database_defaults:
     encoding: utf8mb4
     collation: utf8mb4_unicode_ci
-  users:
+  databases:
     example_db:
       encoding: utf8mb4
       collation: utf8mb4_unicode_ci
+      name: example
+  users:
+    example_user:
+      username: example
+      password: example
       hosts:
         example_host: localhost
       privileges:
-        example_privilege: "mydb.*:all"
+        example_privilege: "example.*:all"
 ```
