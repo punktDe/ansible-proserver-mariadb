@@ -23,6 +23,6 @@
     - path: /root/.my.cnf
       owner: root
       group: wheel
-    - path: "/home/{{ ansible_hostname }}/.my.cnf"
-      owner: "{{ ansible_hostname }}"
-      group: "{{ ansible_hostname }}"
+    - path: "{{ ansible_user_dir }}/.my.cnf"
+      owner: "{{ ansible_user_id }}"
+      group: "{{ ansible_user_id }}"
