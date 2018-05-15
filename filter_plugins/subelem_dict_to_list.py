@@ -5,7 +5,7 @@ def subelem_dicts_to_list(dicts, path):
         for pathelem in path.split('.'):
             prev_subelem = subelem
             subelem = subelem[pathelem]
-        prev_subelem[pathelem] = subelem.values()
+        prev_subelem[pathelem] = list(subelem.values())
         result.append(dictelem)
     return result
 

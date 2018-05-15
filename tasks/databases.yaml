@@ -10,4 +10,4 @@
     encoding: "{{ item.encoding|default(mariadb.database_defaults.encoding, true) }}"
     collation: "{{ item.collation|default(mariadb.database_defaults.collation, true) }}"
   when: item
-  with_items: "{{ mariadb.databases.values() }}"
+  with_items: "{{ mariadb.databases.values()|list }}"
