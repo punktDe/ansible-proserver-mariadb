@@ -1,0 +1,14 @@
+---
+- name: Configure MariaDB (my.cnf)
+  ini_file:
+    path: "{{ config_filepath }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    state: "{{ 'present' if item.value is not none else 'absent' }}"
+  loop_control:
+    label: "{{ config_filepath }} {{ item.section }}.{{ item.option }}={{ item.value }}"
+  with_items: "{{ mariadb['my.cnf']|mariadb_ini_helper }}"
+  vars:
+    config_filepath: "{{ mariadb.prefix.config }}/my.cnf"
+  notify: Restart MariaDB

@@ -1,6 +1,9 @@
 ---
 mariadb:
+  prefix:
+    config: /usr/local/etc
   databases: {}
   database_defaults:
     encoding: utf8mb4
     collation: utf8mb4_unicode_ci
+  my.cnf: {}
