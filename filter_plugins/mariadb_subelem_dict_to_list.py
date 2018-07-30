@@ -1,4 +1,4 @@
-def subelem_dicts_to_list(dicts, path):
+def mariadb_subelem_dicts_to_list(dicts, path):
     result = []
     for dictelem in dicts:
         subelem = dictelem
@@ -10,8 +10,8 @@ def subelem_dicts_to_list(dicts, path):
     return result
 
 
-def subelem_dicts_to_list_test():
-    result = subelem_dicts_to_list([
+def mariadb_subelem_dicts_to_list_test():
+    result = mariadb_subelem_dicts_to_list([
         {
             'a': {
                 'b': {
@@ -52,9 +52,9 @@ def subelem_dicts_to_list_test():
 class FilterModule(object):
     def filters(self):
         return {
-            'subelem_dicts_to_list': subelem_dicts_to_list
+            'mariadb_subelem_dicts_to_list': mariadb_subelem_dicts_to_list
         }
 
 
 if __name__ == '__main__':
-    print(subelem_dicts_to_list_test())
+    print(mariadb_subelem_dicts_to_list_test())
