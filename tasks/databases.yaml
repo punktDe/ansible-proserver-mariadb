@@ -1,13 +1,43 @@
 ---
 - name: Create databases
   mysql_db:
-    name: "{{ item.name }}"
+    name: "{{ db.value.name }}"
     encoding: "{{ encoding }}"
     collation: "{{ collation }}"
-  loop_control:
-    label: "{{ item.name }} encoding={{ encoding }} collation={{ collation }}"
+  when: db.value
   vars:
-    encoding: "{{ item.encoding|default(mariadb.database_defaults.encoding, true) }}"
-    collation: "{{ item.collation|default(mariadb.database_defaults.collation, true) }}"
-  when: item
-  with_items: "{{ mariadb.databases.values()|list }}"
+    encoding: "{{ db.value.encoding|default(mariadb.database_defaults.encoding, true) }}"
+    collation: "{{ db.value.collation|default(mariadb.database_defaults.collation, true) }}"
+  loop_control:
+    loop_var: db
+    label: "{{ db.value.name }} encoding={{ encoding }} collation={{ collation }}"
+  with_dict: "{{ mariadb.databases }}"
+  register: mariadb_createdb_result
+
+- block:
+  - name: Upload database dumps
+    copy:
+      src: "{{ db.value.import_file }}"
+      dest: "{{ tmpfile }}"
+      mode: 0600
+    when: item.changed and db.value.import_file|default(none)
+    vars:
+      db: "{{ item.db }}"
+    loop_control:
+      label: "{{ tmpfile }}"
+    with_items: "{{ mariadb_createdb_result.results }}"
+
+  - name: Restore databases
+    mysql_db:
+      state: import
+      target: "{{ tmpfile }}"
+      name: "{{ db.value.name }}"
+    when: item.changed and db.value.import_file|default(none)
+    vars:
+      db: "{{ item.db }}"
+    loop_control:
+      label: "{{ db.value.name }} file={{ tmpfile }}"
+    with_items: "{{ mariadb_createdb_result.results }}"
+
+  vars:
+    tmpfile: "/tmp/mariadb-{{ db.key }}.sql"
