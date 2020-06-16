@@ -1,5 +1,15 @@
 ---
+- name: Check for root password
+  stat:
+    path: /usr/local/etc/mysql-password
+  register: mysql_password
+
+- name: create root password
+  command: "pwgen 25 1"
+  register: generated_password
+
 - name: Read root-password
+  when: mysql_password.stat.exists
   slurp:
     src: "{{ item }}"
   with_items:
@@ -7,6 +17,7 @@
   register: slurp_result
 
 - name: Write root password to cli client configuration file
+  when: mysql_password.stat.exists
   blockinfile:
     path: "{{ item.path }}"
     owner: "{{ item.owner }}"

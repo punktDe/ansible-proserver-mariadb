@@ -1,5 +1,5 @@
 - name: Install MariaDB
   when: ansible_distribution == 'Ubuntu'
   apt:
-    name: [mariadb-server, python3-pymysql]
+    name: [mariadb-server, python3-pymysql, pwgen]
     update_cache: True

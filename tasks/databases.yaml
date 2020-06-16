@@ -4,6 +4,7 @@
     name: "{{ db.value.name }}"
     encoding: "{{ encoding }}"
     collation: "{{ collation }}"
+    login_unix_socket: "{{ mariadb.socket if mariadb.socket else null }}"
   when: db.value
   vars:
     encoding: "{{ db.value.encoding|default(mariadb.database_defaults.encoding, true) }}"
@@ -15,6 +16,7 @@
   register: mariadb_createdb_result
 
 - block:
+
   - name: Upload database dumps
     copy:
       src: "{{ db.value.import_file }}"
