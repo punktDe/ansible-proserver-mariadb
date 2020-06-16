@@ -2,9 +2,14 @@
 mariadb:
   prefix:
     config: /usr/local/etc
+  config:
+    filename: my.cnf
   databases: {}
   database_defaults:
     encoding: utf8mb4
     collation: utf8mb4_unicode_ci
   socket:
   my.cnf: {}
+  galera:
+    cluster: False
+    initializer: False

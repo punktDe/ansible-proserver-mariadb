@@ -1,0 +1,85 @@
+---
+- name: Check if grastate.dat exists
+  stat:
+    path: /var/lib/mysql/grastate.dat
+  register: grastate
+
+- name: Check if cluster is save to bootstrap
+  when: grastate.stat.exists
+  slurp:
+    path: /var/lib/mysql/grastate.dat
+  register: bootstrap
+
+- name: Check if mariadb is already runnning
+  stat:
+    path: /var/run/mysqld/mysqld.pid
+  register: pid
+
+- name: Fail if cluster cannot be initialzed
+  fail:
+    msg: "cluster initializer is not ready to bootstrap cluster"
+  when:
+    - mariadb.galera.initializer == True
+    - bootstrap.content is defined
+    - "'Safe to Bootstrap: 0' in bootstrap.content | b64decode"
+    - pid.stat.exists == False
+
+- block:
+
+  - name: stop mariadb
+    service:
+      name: mariadb
+      state: stopped
+
+  - name: remove wsrep_ready
+    file:
+      path: /tmp/wsrep_ready
+      state: absent
+
+  - name: repeatedly write cluster state to wsrep_ready
+    cron:
+      name: "check cluster"
+      minute: "*"
+      job: "echo \"SHOW STATUS LIKE 'wsrep_ready';\" | mysql -u root | grep 'wsrep_ready' > /tmp/wsrep_ready"
+
+  - name: Initialize cluster
+    when: mariadb.galera.initializer == True
+    command: /usr/bin/galera_new_cluster
+
+  - name: Wait that cluster is initialized
+    when: mariadb.galera.initializer == True
+    wait_for:
+      path: /tmp/wsrep_ready
+      search_regex: "wsrep_ready\tON"
+
+  - name: Join cluster
+    when: mariadb.galera.initializer == False
+    service:
+      name: mariadb
+      state: started
+
+  - name: Wait that node has joined cluster
+    when: mariadb.galera.initializer == False
+    wait_for:
+      path: /tmp/wsrep_ready
+      search_regex: "wsrep_ready\tON"
+
+  - name: stop writing state to wsrep_ready
+    cron:
+      name: "check cluster"
+      state: absent
+
+  - name: remove wsrep_ready
+    file:
+      path: /tmp/wsrep_ready
+      state: absent
+
+  when:
+    - mariadb.galera.cluster == True
+    - >
+      grastate.stat.exists == False
+      or 'Safe to Bootstrap: 1' in bootstrap.content | b64decode
+      or mariadb.galera.initializer == False and pid.stat.exists == False
+
+
+
