@@ -76,6 +76,7 @@
 
   when:
     - mariadb.galera.cluster == True
+    - mariadb.galera.arbitrator == False
     - >
       grastate.stat.exists == False
       or 'Safe to Bootstrap: 1' in bootstrap.content | b64decode

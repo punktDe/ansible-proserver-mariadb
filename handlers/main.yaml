@@ -10,3 +10,8 @@
     name: "{% if ansible_distribution == 'Ubuntu' %}mysql{% else %}mysql-server{% endif %}"
     state: restarted
   when: not (mysqld_service_result is defined and mysqld_service_result.changed)
+
+- name: Restart garbd
+  service:
+    name: garb
+    state: restarted

@@ -11,10 +11,20 @@
       state: present
       filename: /etc/apt/sources.list.d/mariadb.list
 
-  - name: Install MariaDB
-    when: ansible_distribution == 'Ubuntu'
-    apt:
-      name: [mariadb-server, python3-pymysql, pwgen]
-      update_cache: True
-
   when: ansible_distribution == 'Ubuntu'
+
+- name: Install MariaDB
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - mariadb.galera.arbitrator == False
+  apt:
+    name: [mariadb-server, python3-pymysql, pwgen]
+    update_cache: True
+
+- name: Install garb
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - mariadb.galera.arbitrator == True
+  apt:
+    name: [galera-arbitrator-3, pwgen]
+    update_cache: True

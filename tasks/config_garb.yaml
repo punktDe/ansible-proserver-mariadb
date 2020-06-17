@@ -1,0 +1,10 @@
+---
+- name: Confiure garb (garb.cnf)
+  when: mariadb.galera.arbitrator == True
+  template:
+    src: garb.j2
+    dest: /etc/default/garb
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart garbd
