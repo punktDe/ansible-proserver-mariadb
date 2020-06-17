@@ -1,16 +1,20 @@
-- name: Add MariaDB repo key
-  apt_key:
-    url: https://mariadb.org/mariadb_release_signing_key.asc
-    state: present
+- block:
 
-- name: add mariadb repo
-  apt_repository:
-    repo: "deb http://mirror2.hs-esslingen.de/mariadb/repo/10.3/ubuntu focal main"
-    state: present
-    filename: /etc/apt/sources.list.d/mariadb.list
+  - name: Add MariaDB repo key
+    apt_key:
+      url: https://mariadb.org/mariadb_release_signing_key.asc
+      state: present
 
-- name: Install MariaDB
+  - name: add mariadb repo
+    apt_repository:
+      repo: "deb http://{{ mariadb.mirror }}/mariadb/repo/{{ mariadb.version }}/ubuntu focal main"
+      state: present
+      filename: /etc/apt/sources.list.d/mariadb.list
+
+  - name: Install MariaDB
+    when: ansible_distribution == 'Ubuntu'
+    apt:
+      name: [mariadb-server, python3-pymysql, pwgen]
+      update_cache: True
+
   when: ansible_distribution == 'Ubuntu'
-  apt:
-    name: [mariadb-server, python3-pymysql, pwgen]
-    update_cache: True
