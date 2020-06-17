@@ -13,3 +13,5 @@ mariadb:
   galera:
     cluster: False
     initializer: False
+  mirror: mirror2.hs-esslingen.de
+  #version:
