@@ -7,13 +7,18 @@ mariadb:
       {%- else -%}
         /usr/local/etc
       {%- endif -%}
+  socket: >-
+    {%- if ansible_system == 'Linux' -%}
+      /var/run/mysqld/mysqld.sock
+    {%- else -%}
+      /tmp/mysql.sock
+    {%- endif -%}
   config:
     filename: my.cnf
   databases: {}
   database_defaults:
     encoding: utf8mb4
     collation: utf8mb4_unicode_ci
-  socket:
   my.cnf: {}
   galera:
     cluster: False
