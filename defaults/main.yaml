@@ -15,4 +15,8 @@ mariadb:
     initializer: False
     arbitrator: False
   mirror: mirror2.hs-esslingen.de
+  repository:
+    apt:
+      key_url: https://mariadb.org/mariadb_release_signing_key.asc
+      repository: "deb http://{{ vars.mariadb.mirror }}/mariadb/repo/{{ vars.mariadb.version }}/ubuntu focal main"
   #version:
