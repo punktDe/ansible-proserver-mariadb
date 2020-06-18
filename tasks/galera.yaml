@@ -26,7 +26,7 @@
 
 - block:
 
-  - name: stop mariadb
+  - name: Stop MariaDB
     service:
       name: mariadb
       state: stopped
@@ -81,6 +81,5 @@
       grastate.stat.exists == False
       or 'Safe to Bootstrap: 1' in bootstrap.content | b64decode
       or mariadb.galera.initializer == False and pid.stat.exists == False
-
 
 
