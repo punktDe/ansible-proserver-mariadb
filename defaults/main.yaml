@@ -1,7 +1,12 @@
 ---
 mariadb:
   prefix:
-    config: /usr/local/etc
+    config: >-
+      {%- if ansible_system == 'Linux' -%}
+        /etc/mysql
+      {%- else -%}
+        /usr/local/etc
+      {%- endif -%}
   config:
     filename: my.cnf
   databases: {}
