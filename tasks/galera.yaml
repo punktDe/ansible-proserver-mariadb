@@ -2,27 +2,27 @@
 - name: Check if grastate.dat exists
   stat:
     path: /var/lib/mysql/grastate.dat
-  register: grastate
+  register: mariadb_grastate
 
 - name: Check if cluster is save to bootstrap
   when: grastate.stat.exists
   slurp:
     path: /var/lib/mysql/grastate.dat
-  register: bootstrap
+  register: mariadb_bootstrap
 
 - name: Check if mariadb is already runnning
   stat:
     path: /var/run/mysqld/mysqld.pid
-  register: pid
+  register: mariadb_pid
 
 - name: Fail if cluster cannot be initialzed
   fail:
     msg: "cluster initializer is not ready to bootstrap cluster"
   when:
     - mariadb.galera.initializer == True
-    - bootstrap.content is defined
+    - mariadb_bootstrap.content is defined
     - "'Safe to Bootstrap: 0' in bootstrap.content | b64decode"
-    - pid.stat.exists == False
+    - mariadb_pid.stat.exists == False
 
 - block:
 
@@ -78,8 +78,8 @@
     - mariadb.galera.cluster == True
     - mariadb.galera.arbitrator == False
     - >
-      grastate.stat.exists == False
-      or 'Safe to Bootstrap: 1' in bootstrap.content | b64decode
-      or mariadb.galera.initializer == False and pid.stat.exists == False
+      mariadb_grastate.stat.exists == False
+      or 'Safe to Bootstrap: 1' in mariadb_bootstrap.content | b64decode
+      or mariadb.galera.initializer == False and mariadb_pid.stat.exists == False
 
 
