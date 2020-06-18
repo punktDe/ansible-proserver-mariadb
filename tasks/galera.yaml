@@ -21,7 +21,7 @@
   when:
     - mariadb.galera.initializer == True
     - mariadb_bootstrap.content is defined
-    - "'Safe to Bootstrap: 0' in bootstrap.content | b64decode"
+    - "'Safe to Bootstrap: 0' in mariadb_bootstrap.content | b64decode"
     - mariadb_pid.stat.exists == False
 
 - block:
