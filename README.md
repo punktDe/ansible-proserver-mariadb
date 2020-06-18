@@ -131,7 +131,7 @@ mariadb:
       wsrep_cluster_name: '"galera-dev-cluster1"'
       wsrep_cluster_address: "\"gcomm://172.17.78.1,172.17.78.2,172.27.78.3\""
   galera:
-    cluster_nodes: "172.17.78.1,172.17.78.2,172.27.78.3"
+    cluster_nodes: 172.17.78.1,172.17.78.2,172.27.78.3
 ```
 Note the settings for my.cnf.
 
