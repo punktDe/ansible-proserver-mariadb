@@ -128,7 +128,7 @@ mariadb:
     galera:
       wsrep_on: "ON"
       wsrep_provider: /usr/lib/libgalera_smm.so
-      wsrep_cluster_name: "\"galera-dev-cluster1\""
+      wsrep_cluster_name: '"galera-dev-cluster1"'
       wsrep_cluster_address: "\"gcomm://172.17.78.1,172.17.78.2,172.27.78.3\""
   galera:
     cluster_nodes: "172.17.78.1,172.17.78.2,172.27.78.3"
