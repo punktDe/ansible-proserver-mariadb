@@ -6,7 +6,7 @@
     password: "{{ password }}"
     host: "{{ host }}"
     priv: "{{ priv }}"
-    login_unix_socket: "{{ mariadb.socket if mariadb.socket else null }}"
+    login_unix_socket: "{{ mariadb.socket if mariadb.socket else none }}"
   loop_control:
     label: "{{ username }}@{{ host }} priv={{ priv }}"
   vars:
