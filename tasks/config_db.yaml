@@ -1,6 +1,6 @@
 ---
 - name: Configure MariaDB (my.cnf)
-  when: mariadb.galera.arbitrator == False
+  when: mariadb.galera.arbitrator == false
   ini_file:
     path: "{{ config_filepath }}"
     section: "{{ item.section }}"
