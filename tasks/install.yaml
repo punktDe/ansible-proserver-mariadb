@@ -17,7 +17,10 @@
     - ansible_distribution == 'Ubuntu'
     - mariadb.galera.arbitrator == False
   apt:
-    name: [mariadb-server, python3-pymysql, pwgen]
+    name:
+      - mariadb-server
+      - python3-pymysql
+      - pwgen
     update_cache: True
 
 - name: Install garb
