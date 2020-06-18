@@ -1,6 +1,6 @@
 - block:
 
-  - name: Add MariaDB repo key
+  - name: Add MariaDB repository key
     apt_key:
       url: https://mariadb.org/mariadb_release_signing_key.asc
       state: present
