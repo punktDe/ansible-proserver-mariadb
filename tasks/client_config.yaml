@@ -10,8 +10,8 @@
   copy:
     dest: /usr/local/etc/mysql-password
     content: "{{ lookup('password', '/tmp/passwordfile length=45 chars=ascii_letters,digits') }}"
-    owner: root
-    group: root
+    owner: "{{ system.user.root.name }}"
+    group: "{{ system.user.root.group }}"
     mode: '0600'
 
 - name: Read root-password
@@ -20,6 +20,14 @@
   with_items:
     - /usr/local/etc/mysql-password
   register: mariadb_slurp_result
+
+- name: Set root password in database
+  when: mariadb.galera.cluster == false or mariadb.galera.initializer == true
+  mysql_user:
+    name: root
+    password: "{{ mariadb_slurp_result.results.0.content|b64decode|trim }}"
+    host: localhost
+    login_unix_socket: "{{ mariadb.socket if mariadb.socket else none }}"
 
 - name: Write root password to cli client configuration file
   blockinfile:
@@ -36,8 +44,8 @@
     label: "{{ item.path }}"
   with_items:
     - path: /root/.my.cnf
-      owner: root
-      group: root
+      owner: "{{ system.user.root.name }}"
+      group: "{{ system.user.root.group }}"
     - path: "{{ ansible_user_dir }}/.my.cnf"
       owner: "{{ ansible_user_uid }}"
       group: "{{ ansible_user_gid }}"

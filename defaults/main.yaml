@@ -1,4 +1,14 @@
 ---
+system:
+  user:
+    root:
+      name: root
+      group: >-
+        {%- if ansible_system == 'Linux' -%}
+          root
+        {%- else -%}
+          wheel
+        {%- endif -%}
 mariadb:
   prefix:
     config: >-

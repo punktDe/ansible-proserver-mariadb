@@ -1,6 +1,6 @@
 ---
 - name: Create users and database grants
-  when: mariadb.galera.cluster == False or mariadb.galera.initializer == True
+  when: mariadb.galera.cluster == false or mariadb.galera.initializer == true
   mysql_user:
     name: "{{ username }}"
     password: "{{ password }}"
