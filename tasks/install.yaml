@@ -28,5 +28,7 @@
     - ansible_distribution == 'Ubuntu'
     - mariadb.galera.arbitrator == True
   apt:
-    name: [galera-arbitrator-3, pwgen]
+    name:
+      - galera-arbitrator-3
+      - pwgen
     update_cache: True
