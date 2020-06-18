@@ -5,7 +5,7 @@
       url: https://mariadb.org/mariadb_release_signing_key.asc
       state: present
 
-  - name: add mariadb repo
+  - name: Add MariaDB repository
     apt_repository:
       repo: "deb http://{{ mariadb.mirror }}/mariadb/repo/{{ mariadb.version }}/ubuntu focal main"
       state: present
