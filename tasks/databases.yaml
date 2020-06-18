@@ -4,7 +4,7 @@
     name: "{{ db.value.name }}"
     encoding: "{{ encoding }}"
     collation: "{{ collation }}"
-    login_unix_socket: "{{ mariadb.socket if mariadb.socket else null }}"
+    login_unix_socket: "{{ mariadb.socket if mariadb.socket else none }}"
   when:
     - db.value
     - mariadb.galera.cluster == False or mariadb.galera.initializer == True
