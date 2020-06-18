@@ -103,7 +103,7 @@ mariadb:
 ## Galera Cluster 
 
 See [GALERA.md](GALERA.md).
-You can use this role to create a cluster of multiple MariaDB-Servers using [galera](https://galeracluster.com). 
+You can use this role to cluster multiple MariaDB servers using [Galera](https://galeracluster.com). 
 Please consider reading [galera's documentation](https://galeracluster.com/library/training/tutorials/getting-started.html) first, 
 to get a basic understanding of  how galera works.
 
