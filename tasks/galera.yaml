@@ -5,7 +5,7 @@
   register: mariadb_grastate
 
 - name: Check if cluster is save to bootstrap
-  when: grastate.stat.exists
+  when: mariadb_grastate.stat.exists
   slurp:
     path: /var/lib/mysql/grastate.dat
   register: mariadb_bootstrap
