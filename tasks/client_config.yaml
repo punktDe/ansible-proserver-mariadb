@@ -17,8 +17,7 @@
   register: slurp_result
 
 - name: Write root password to cli client configuration file
-  when:
-    - mysql_password.stat.exists
+  when: mysql_password.stat.exists
   blockinfile:
     path: "{{ item.path }}"
     owner: "{{ item.owner }}"
