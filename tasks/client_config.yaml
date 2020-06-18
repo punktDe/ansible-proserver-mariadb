@@ -3,22 +3,25 @@
   changed_when: false
   stat:
     path: /usr/local/etc/mysql-password
-  register: mysql_password
+  register: mariadb_mysql_password
 
 - name: create root password
-  command: "pwgen 25 1"
-  register: generated_password
+  when: mariadb_mysql_password.stat.exists == false
+  copy:
+    dest: /usr/local/etc/mysql-password
+    content: "{{ lookup('password', '/tmp/passwordfile length=45 chars=ascii_letters,digits') }}"
+    owner: root
+    group: root
+    mode: '0600'
 
 - name: Read root-password
-  when: mysql_password.stat.exists
   slurp:
     src: "{{ item }}"
   with_items:
     - /usr/local/etc/mysql-password
-  register: slurp_result
+  register: mariadb_slurp_result
 
 - name: Write root password to cli client configuration file
-  when: mysql_password.stat.exists
   blockinfile:
     path: "{{ item.path }}"
     owner: "{{ item.owner }}"
@@ -27,14 +30,14 @@
     create: yes
     block: |
       [client]
-      password={{ slurp_result.results.0.content|b64decode|trim }}
+      password={{ mariadb_slurp_result.results.0.content|b64decode|trim }}
     marker: "# {mark} ANSIBLE MANAGED BLOCK: MariaDB root password"
   loop_control:
     label: "{{ item.path }}"
   with_items:
     - path: /root/.my.cnf
       owner: root
-      group: wheel
+      group: root
     - path: "{{ ansible_user_dir }}/.my.cnf"
       owner: "{{ ansible_user_uid }}"
       group: "{{ ansible_user_gid }}"

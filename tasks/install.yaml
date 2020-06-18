@@ -19,7 +19,6 @@
     name:
       - mariadb-server
       - python3-pymysql
-      - pwgen
     update_cache: True
 
 - name: Install garb
@@ -29,5 +28,4 @@
   apt:
     name:
       - galera-arbitrator-3
-      - pwgen
     update_cache: True
