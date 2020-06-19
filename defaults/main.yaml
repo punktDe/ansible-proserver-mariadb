@@ -34,6 +34,9 @@ mariadb:
     cluster: False
     initializer: False
     arbitrator: False
+    join:
+      max_wait: 300
+      check_pause: 1
   mirror: mirror2.hs-esslingen.de
   repository:
     apt:

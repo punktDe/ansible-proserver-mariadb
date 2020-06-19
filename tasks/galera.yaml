@@ -31,26 +31,13 @@
       name: mariadb
       state: stopped
 
-  - name: remove wsrep_ready
-    file:
-      path: /tmp/wsrep_ready
-      state: absent
-
-  - name: repeatedly write cluster state to wsrep_ready
-    cron:
-      name: "check cluster"
-      minute: "*"
-      job: "echo \"SHOW STATUS LIKE 'wsrep_ready';\" | mysql -u root | grep 'wsrep_ready' > /tmp/wsrep_ready"
-
   - name: Initialize cluster
     when: mariadb.galera.initializer == True
     command: /usr/bin/galera_new_cluster
 
   - name: Wait that cluster is initialized
     when: mariadb.galera.initializer == True
-    wait_for:
-      path: /tmp/wsrep_ready
-      search_regex: "wsrep_ready\tON"
+    shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
   - name: Join cluster
     when: mariadb.galera.initializer == False
@@ -60,19 +47,7 @@
 
   - name: Wait that node has joined cluster
     when: mariadb.galera.initializer == False
-    wait_for:
-      path: /tmp/wsrep_ready
-      search_regex: "wsrep_ready\tON"
-
-  - name: stop writing state to wsrep_ready
-    cron:
-      name: "check cluster"
-      state: absent
-
-  - name: remove wsrep_ready
-    file:
-      path: /tmp/wsrep_ready
-      state: absent
+    shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
   when:
     - mariadb.galera.cluster == True
