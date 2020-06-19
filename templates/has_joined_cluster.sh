@@ -14,7 +14,7 @@ endtime=`expr $starttime + $maxwait`
 
 while [ `date +%s` -lt $endtime ]
 do
-        if echo "SHOW STATUS LIKE 'wsrep_ready';" | mysql -u root | grep 'ON'
+        if echo "SHOW STATUS LIKE 'wsrep_ready';" | mysql | grep 'ON'
         then
                 exit 0
         fi
