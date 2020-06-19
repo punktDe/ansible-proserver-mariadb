@@ -31,7 +31,7 @@ mariadb:
     collation: utf8mb4_unicode_ci
   my.cnf: {}
   galera:
-    cluster: False
+    cluster: no
     initializer: False
     arbitrator: False
     join:
