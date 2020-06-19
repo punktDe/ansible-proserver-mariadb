@@ -2,8 +2,8 @@
 - name: Confiure garb (garb.cnf)
   when: mariadb.galera.arbitrator == True
   template:
-    src: garb.j2
-    dest: /etc/default/garb
+    src: garb.cnf
+    dest: /etc/default/garb.cnf
     owner: root
     group: root
     mode: 0644
