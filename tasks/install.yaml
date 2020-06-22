@@ -14,7 +14,7 @@
 - name: Install MariaDB
   when:
     - ansible_distribution == 'Ubuntu'
-    - mariadb.galera.arbitrator == False
+    - mariadb.galera.arbitrator
   apt:
     name:
       - mariadb-server
@@ -24,7 +24,7 @@
 - name: Install garb
   when:
     - ansible_distribution == 'Ubuntu'
-    - mariadb.galera.arbitrator == True
+    - mariadb.galera.arbitrator
   apt:
     name:
       - galera-arbitrator-3
