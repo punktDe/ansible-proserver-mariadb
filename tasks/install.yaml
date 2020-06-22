@@ -19,7 +19,7 @@
 - name: Install MariaDB
   when:
     - ansible_distribution == 'Ubuntu'
-    - mariadb.galera.arbitrator
+    - not mariadb.galera.arbitrator
   apt:
     name:
       - mariadb-server

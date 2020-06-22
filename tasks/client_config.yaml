@@ -6,7 +6,7 @@
   register: mariadb_mysql_password
 
 - name: Create root password
-  when: mariadb_mysql_password.stat.exists == false
+  when: not mariadb_mysql_password.stat.exists
   copy:
     dest: /usr/local/etc/mysql-password
     content: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
