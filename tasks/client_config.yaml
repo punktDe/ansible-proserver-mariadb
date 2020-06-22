@@ -9,7 +9,7 @@
   when: mariadb_mysql_password.stat.exists == false
   copy:
     dest: /usr/local/etc/mysql-password
-    content: "{{ lookup('password', '/tmp/passwordfile length=45 chars=ascii_letters,digits') }}"
+    content: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
     owner: "{{ system.user.root.name }}"
     group: "{{ system.user.root.group }}"
     mode: '0600'
