@@ -11,6 +11,11 @@
 
   when: ansible_distribution == 'Ubuntu'
 
+- name: update apt cache
+  apt:
+    update_cache: yes
+  when: ansible:distribution == 'Ubuntu'
+
 - name: Install MariaDB
   when:
     - ansible_distribution == 'Ubuntu'
@@ -19,7 +24,6 @@
     name:
       - mariadb-server
       - python3-pymysql
-    update_cache: True
 
 - name: Install garb
   when:
@@ -28,4 +32,3 @@
   apt:
     name:
       - galera-arbitrator-3
-    update_cache: True
