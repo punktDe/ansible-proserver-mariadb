@@ -4,7 +4,4 @@
   template:
     src: garb.cnf
     dest: /etc/default/garb.cnf
-    owner: root
-    group: root
-    mode: 0644
   notify: Restart garbd
