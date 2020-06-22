@@ -1,4 +1,3 @@
-#{{ ansible_managed }}
 # Copyright (C) 2012 Codership Oy
 # This config file is to be sourced by garb service script.
 
