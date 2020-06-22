@@ -1,11 +1,10 @@
 #!/bin/sh
 
-# Check if cluster node is ready and has
+# Check if cluster node is ready and has joined the cluster
 
 # Config
 # ------
 total_maxwait_seconds={{ mariadb.galera.join.max_wait }}
-# Pause zwischen 2 Versuchen in Sekunden
 sleeptime_seconds={{ mariadb.galera.join.check_pause }}
 
 starttime=`date +%s`
