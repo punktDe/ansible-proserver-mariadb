@@ -3,17 +3,20 @@
   stat:
     path: /var/lib/mysql/grastate.dat
   register: mariadb_grastate
+  changed_when: false
 
 - name: Check if cluster is save to bootstrap
   when: mariadb_grastate.stat.exists
   slurp:
     path: /var/lib/mysql/grastate.dat
   register: mariadb_bootstrap
+  changed_when: false
 
 - name: Check if mariadb is already runnning
   stat:
     path: /var/run/mysqld/mysqld.pid
   register: mariadb_pid
+  changed_when: false
 
 - name: Fail if cluster cannot be initialzed
   fail:
