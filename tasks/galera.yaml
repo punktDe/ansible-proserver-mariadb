@@ -19,10 +19,10 @@
   fail:
     msg: "cluster initializer is not ready to bootstrap cluster"
   when:
-    - mariadb.galera.initializer == True
+    - mariadb.galera.initializer
     - mariadb_bootstrap.content is defined
     - "'Safe to Bootstrap: 0' in mariadb_bootstrap.content | b64decode"
-    - mariadb_pid.stat.exists == False
+    - not mariadb_pid.stat.exists
 
 - block:
 
@@ -32,15 +32,15 @@
       state: stopped
 
   - name: Initialize cluster
-    when: mariadb.galera.initializer == True
+    when: mariadb.galera.initializer
     command: /usr/bin/galera_new_cluster
 
   - name: Wait that cluster is initialized
-    when: mariadb.galera.initializer == True
+    when: mariadb.galera.initializer
     shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
   - name: Join cluster
-    when: mariadb.galera.initializer == False
+    when: not mariadb.galera.initializer
     service:
       name: mariadb
       state: started
@@ -50,9 +50,9 @@
     shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
   when:
-    - mariadb.galera.cluster == True
-    - mariadb.galera.arbitrator == False
+    - mariadb.galera.cluster
+    - not mariadb.galera.arbitrator
     - >
       not mariadb_grastate.stat.exists
       or 'Safe to Bootstrap: 1' in mariadb_bootstrap.content | b64decode
-      or mariadb.galera.initializer == False and mariadb_pid.stat.exists == False
+      or not mariadb.galera.initializer and not mariadb_pid.stat.exists

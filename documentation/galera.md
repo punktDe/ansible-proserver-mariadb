@@ -41,8 +41,8 @@ mariadb:
   cms:
     hosts: 172.17.78.1
   galera:
-    cluster: True
-    initializer: True
+    cluster: yes
+    initializer: yes
 ``` 
 This node is the initializer, which means the cluster is bootstrapped on this node and the other nodes join into the bootstrapped cluster.
 
@@ -55,7 +55,7 @@ mariadb:
       hosts:
         cms: 172.17.78.2
   galera:
-    cluster: True
+    cluster: yes
 ``` 
 
 host_vars/db3.yaml:
@@ -67,7 +67,7 @@ mariadb:
       hosts:
         cms: 172.17.78.3
   galera:
-    cluster: True
+    cluster: yes
 ``` 
 Now you can run your playbook and the cluster will be set up
 
@@ -85,8 +85,8 @@ mariadb:
   cms:
     hosts: 172.17.78.1
   galera:
-    cluster: True
-    initializer: True
+    cluster: yes
+    initializer: yes
 ``` 
 This node is the initializer, which means the cluster is bootstrapped on this node and the other nodes join into the bootstrapped cluster.
 
@@ -99,7 +99,7 @@ mariadb:
       hosts:
         cms: 172.17.78.2
   galera:
-    cluster: True
+    cluster: yes
 ``` 
 
 host_vars/db3.yaml:
@@ -111,7 +111,7 @@ mariadb:
       hosts:
         cms: 172.17.78.3
   galera:
-    cluster: True
-    arbitrator: True
+    cluster: yes
+    arbitrator: yes
 ``` 
 Now you can run your playbook and the cluster will be set up

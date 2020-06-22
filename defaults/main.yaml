@@ -32,8 +32,8 @@ mariadb:
   my.cnf: {}
   galera:
     cluster: no
-    initializer: False
-    arbitrator: False
+    initializer: no
+    arbitrator: no
     join:
       max_wait: 300
       check_pause: 1

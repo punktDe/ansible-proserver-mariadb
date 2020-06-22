@@ -7,7 +7,7 @@
     login_unix_socket: "{{ mariadb.socket if mariadb.socket else none }}"
   when:
     - db.value
-    - mariadb.galera.cluster == False or mariadb.galera.initializer == True
+    - not mariadb.galera.cluster or mariadb.galera.initializer
   vars:
     encoding: "{{ db.value.encoding|default(mariadb.database_defaults.encoding, true) }}"
     collation: "{{ db.value.collation|default(mariadb.database_defaults.collation, true) }}"
@@ -26,7 +26,7 @@
       mode: 0600
     when:
       - item.changed and db.value.import_file|default(none)
-      - mariadb.galera.cluster == False or mariadb.galera.initializer == True
+      - not mariadb.galera.cluster or mariadb.galera.initializer
     vars:
       db: "{{ item.db }}"
     loop_control:
@@ -40,7 +40,7 @@
       name: "{{ db.value.name }}"
     when:
       - item.changed and db.value.import_file|default(none)
-      - mariadb.galera.cluster == False or mariadb.galera.initializer == True
+      - not mariadb.galera.cluster or mariadb.galera.initializer
     vars:
       db: "{{ item.db }}"
     loop_control:
