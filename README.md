@@ -101,7 +101,6 @@ mariadb:
 ```
 
 
-
 ## Further Documentation
 
 * [Galera Cluster](./documentation/galera.md)
