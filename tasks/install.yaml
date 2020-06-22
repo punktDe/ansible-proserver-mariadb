@@ -1,20 +1,19 @@
-- block:
+- when: ansible_distribution == 'Ubuntu'
+  block:
+    - name: Add MariaDB repository key
+      apt_key:
+        url: "{{ mariadb.repository.apt.key_url }}"
 
-  - name: Add MariaDB repository key
-    apt_key:
-      url: "{{ mariadb.repository.apt.key_url }}"
+    - name: Add MariaDB repository
+      apt_repository:
+        repo: "{{ mariadb.repository.apt.repository }}"
+        filename: /etc/apt/sources.list.d/mariadb.list
+      register: mariadb_add_apt_repository
 
-  - name: Add MariaDB repository
-    apt_repository:
-      repo: "{{ mariadb.repository.apt.repository }}"
-      filename: /etc/apt/sources.list.d/mariadb.list
-
-  when: ansible_distribution == 'Ubuntu'
-
-- name: update apt cache
-  apt:
-    update_cache: yes
-  when: ansible:distribution == 'Ubuntu'
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      when: mariadb_add_apt_repository.changed
 
 - name: Install MariaDB
   when:
