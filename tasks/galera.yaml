@@ -46,7 +46,7 @@
       state: started
 
   - name: Wait that node has joined cluster
-    when: mariadb.galera.initializer == False
+    when: not mariadb.galera.initializer
     shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
   when:
@@ -56,5 +56,4 @@
       mariadb_grastate.stat.exists == False
       or 'Safe to Bootstrap: 1' in mariadb_bootstrap.content | b64decode
       or mariadb.galera.initializer == False and mariadb_pid.stat.exists == False
-
 
