@@ -1,7 +1,7 @@
 # Galera Cluster 
 
 You can use this role to cluster multiple MariaDB servers using [Galera](https://galeracluster.com). 
-Please consider reading [galera's documentation](https://galeracluster.com/library/training/tutorials/getting-started.html) first, 
+Please consider reading [Galera's documentation](https://galeracluster.com/library/training/tutorials/getting-started.html) first, 
 to get a basic understanding of how Galera works.
 
 ## Three-node cluster example
@@ -76,7 +76,7 @@ Now you can run your playbook and the cluster will be set up
 This is a special case of a two-node cluster that will not result in a split-brain scenario, because of the arbitrator node. 
 The arbitrator node does not store the actual data, but will record the positions and vote in the quorum. 
 
-Please be sure you read [galera's documentation](https://galeracluster.com/library/kb/two-node-clusters.html) for this case and understand the consequences, before using this. 
+Please be sure you read [Galera's documentation](https://galeracluster.com/library/kb/two-node-clusters.html) for this case and understand the consequences, before using this. 
 
 host_vars/db1.yaml:
 ```yaml
