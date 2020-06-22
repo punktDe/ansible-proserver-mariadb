@@ -1,15 +1,15 @@
 ---
 mariadb:
   system:
-  user:
-    root:
-      name: root
-      group: >-
-        {%- if ansible_system == 'Linux' -%}
-          root
-        {%- else -%}
-          wheel
-        {%- endif -%}
+    user:
+      root:
+        name: root
+        group: >-
+          {%- if ansible_system == 'Linux' -%}
+            root
+          {%- else -%}
+            wheel
+          {%- endif -%}
   prefix:
     config: >-
       {%- if ansible_system == 'Linux' -%}
