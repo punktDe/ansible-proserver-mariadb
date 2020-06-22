@@ -10,8 +10,8 @@
   copy:
     dest: /usr/local/etc/mysql-password
     content: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
-    owner: "{{ system.user.root.name }}"
-    group: "{{ system.user.root.group }}"
+    owner: "{{ mariadb.system.user.root.name }}"
+    group: "{{ mariadb.system.user.root.group }}"
     mode: '0600'
 
 - name: Read root-password
