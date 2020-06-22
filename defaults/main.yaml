@@ -1,5 +1,6 @@
 ---
-system:
+mariadb:
+  system:
   user:
     root:
       name: root
@@ -9,7 +10,6 @@ system:
         {%- else -%}
           wheel
         {%- endif -%}
-mariadb:
   prefix:
     config: >-
       {%- if ansible_system == 'Linux' -%}

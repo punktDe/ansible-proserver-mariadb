@@ -44,8 +44,8 @@
     label: "{{ item.path }}"
   with_items:
     - path: /root/.my.cnf
-      owner: "{{ system.user.root.name }}"
-      group: "{{ system.user.root.group }}"
+      owner: "{{ mariadb.system.user.root.name }}"
+      group: "{{ mariadb.system.user.root.group }}"
     - path: "{{ ansible_user_dir }}/.my.cnf"
       owner: "{{ ansible_user_uid }}"
       group: "{{ ansible_user_gid }}"
