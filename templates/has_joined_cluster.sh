@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# Skript um einen Test solange auszuführen, bis erfolgreich oder timeout
+# Check if cluster node is ready and has
 
-# Konfig
+# Config
 # ------
 # maximale Wartezeit in Sekunden
 maxwait={{ mariadb.galera.join.max_wait }}
