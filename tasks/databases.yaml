@@ -49,4 +49,3 @@
 
   vars:
     tmpfile: "/tmp/mariadb-{{ db.key }}.sql"
-
