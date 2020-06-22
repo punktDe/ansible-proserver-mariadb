@@ -53,7 +53,6 @@
     - mariadb.galera.cluster == True
     - mariadb.galera.arbitrator == False
     - >
-      mariadb_grastate.stat.exists == False
+      not mariadb_grastate.stat.exists
       or 'Safe to Bootstrap: 1' in mariadb_bootstrap.content | b64decode
       or mariadb.galera.initializer == False and mariadb_pid.stat.exists == False
-
