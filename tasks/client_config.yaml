@@ -28,6 +28,7 @@
     password: "{{ mariadb_slurp_result.results.0.content|b64decode|trim }}"
     host: localhost
     login_unix_socket: "{{ mariadb.socket if mariadb.socket else none }}"
+  no_log: yes
 
 - name: Write root password to cli client configuration file
   blockinfile:
