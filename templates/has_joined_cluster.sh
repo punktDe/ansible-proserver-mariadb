@@ -18,7 +18,7 @@ do
     fi
     if [ $sleeptime_seconds -ge 1 ]
     then
-            sleep $sleeptime_sleeptime_seconds
+            sleep $sleeptime_seconds
     fi
 done
 
