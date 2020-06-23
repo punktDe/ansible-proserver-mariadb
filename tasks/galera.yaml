@@ -12,7 +12,7 @@
   register: mariadb_bootstrap
   changed_when: false
 
-- name: Check if mariadb is already runnning
+- name: Check if MariaDB is already runnning
   stat:
     path: /var/run/mysqld/mysqld.pid
   register: mariadb_pid
