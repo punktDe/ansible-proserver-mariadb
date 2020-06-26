@@ -24,6 +24,9 @@
 - name: Set root password in database
   when: not mariadb.galera.cluster or mariadb.galera.initializer
   mysql_user:
+    login_user: root
+    login_password: "{{ mariadb_slurp_result.results.0.content|b64decode|trim }}"
+    check_implicit_admin: yes
     name: root
     password: "{{ mariadb_slurp_result.results.0.content|b64decode|trim }}"
     host: localhost
@@ -31,6 +34,19 @@
   no_log: yes
 
 - name: Write root password to cli client configuration file
+  vars:
+    mariadb_root_password: >-
+      {%- if mariadb.galera.cluster and not mariadb.galera.initializer -%}
+        {{- (groups[environment_name]
+                    | intersect(groups.galera_cluster)
+                    | map('extract', hostvars)
+                    | selectattr('mariadb.galera.initializer', 'defined')
+                    |selectattr('mariadb.galera.initializer', 'true')
+                    | first)
+                   .mariadb_slurp_result.results.0.content|b64decode|trim -}}
+      {%- else -%}
+        {{- mariadb_slurp_result.results.0.content|b64decode|trim -}}
+      {%- endif -%}
   blockinfile:
     path: "{{ item.path }}"
     owner: "{{ item.owner }}"
@@ -39,7 +55,7 @@
     create: yes
     block: |
       [client]
-      password={{ mariadb_slurp_result.results.0.content|b64decode|trim }}
+      password={{ mariadb_root_password }}
     marker: "# {mark} ANSIBLE MANAGED BLOCK: MariaDB root password"
   loop_control:
     label: "{{ item.path }}"

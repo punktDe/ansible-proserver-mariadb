@@ -11,7 +11,7 @@
     state: restarted
   when: not (mysqld_service_result is defined and mysqld_service_result.changed)
 
-- name: Restart garbd
+- name: Restart garb
   service:
     name: garb
     state: restarted

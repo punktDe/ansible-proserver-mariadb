@@ -4,4 +4,4 @@
   template:
     src: garb.cnf
     dest: /etc/default/garb.cnf
-  notify: Restart garbd
+  notify: Restart garb

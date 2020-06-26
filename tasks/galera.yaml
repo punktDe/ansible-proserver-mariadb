@@ -19,17 +19,25 @@
   changed_when: false
 
 - name: Fail if cluster cannot be initialzed
-  fail:
-    msg: "cluster initializer is not ready to bootstrap cluster"
   when:
     - mariadb.galera.initializer
     - mariadb_bootstrap.content is defined
     - "'Safe to Bootstrap: 0' in mariadb_bootstrap.content | b64decode"
     - not mariadb_pid.stat.exists
+  fail:
+    msg: "cluster initializer is not ready to bootstrap cluster"
 
-- block:
+- when:
+    - mariadb.galera.cluster
+    - >
+      not mariadb_grastate.stat.exists
+      or 'Safe to Bootstrap: 1' in mariadb_bootstrap.content | b64decode
+      or not mariadb.galera.initializer and not mariadb_pid.stat.exists
+
+  block:
 
   - name: Stop MariaDB
+    when: not mariadb.galera.arbitrator
     service:
       name: mariadb
       state: stopped
@@ -38,56 +46,25 @@
     when: mariadb.galera.initializer
     command: /usr/bin/galera_new_cluster
 
-  - name: Wait that cluster is initialized
+  - name: Wait until cluster is initialized
     when: mariadb.galera.initializer
     shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
-  - name: Read database root password from initializer
-    when: mariadb.galera.initializer
-    slurp:
-      src: /root/.my.cnf
-    register: mariadb_root_password
-    changed_when: false
-
   - name: Join cluster
-    when: not mariadb.galera.initializer
+    when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
     service:
       name: mariadb
       state: started
 
-  - name: Write root password to joiner nodes
-    when:
-      - not mariadb.galera.initializer
-      - not mariadb.galera.arbitrator
-    copy:
-      dest: "{{ item.path }}"
-      content: >
-        {{ (groups[environment_name]
-             | intersect(groups.galera_cluster)
-             | map('extract', hostvars)
-             | selectattr('mariadb.galera.initializer', 'defined')
-             | selectattr('mariadb.galera.initializer', 'true')
-             | first)
-           .mariadb_root_password.content
-           | b64decode }}
-      owner: "{{ item.owner }}"
-      group: "{{ item.group }}"
-    loop:
-      - path: /root/.my.cnf
-        owner: "{{ mariadb.system.user.root.name }}"
-        group: "{{ mariadb.system.user.root.group }}"
-      - path: "{{ ansible_user_dir }}/.my.cnf"
-        owner: "{{ ansible_user_uid }}"
-        group: "{{ ansible_user_gid }}"
-    loop_control:
-      label: "{{ item.path }}"
-
-  - name: Wait that node has joined cluster
-    when: not mariadb.galera.initializer
+  - name: Wait until node has joined cluster
+    when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
     shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
-  # a.k.a start garbd
-  - meta: flush_handlers
+  - name: Start garb
+    when: mariadb.galera.arbitrator
+    service:
+      name: garb
+      state: started
 
   - name: Restart initializer node to stop bottestrap and rejoin cluster
     when: mariadb.galera.initializer
@@ -98,11 +75,3 @@
   - name: Wait that node has rejoined cluster
     when: mariadb.galera.initializer
     shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
-
-  when:
-    - mariadb.galera.cluster
-    - not mariadb.galera.arbitrator
-    - >
-      not mariadb_grastate.stat.exists
-      or 'Safe to Bootstrap: 1' in mariadb_bootstrap.content | b64decode
-      or not mariadb.galera.initializer and not mariadb_pid.stat.exists
