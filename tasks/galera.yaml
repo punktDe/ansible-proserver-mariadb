@@ -60,17 +60,27 @@
       - not mariadb.galera.initializer
       - not mariadb.galera.arbitrator
     copy:
-      dest: /root/.my.cnf
+      dest: "{{ item.path }}"
       content: >
-        {{
-        (groups[environment_name]
-          | intersect(groups.galera_cluster)
-          | map('extract', hostvars)
-          | selectattr('mariadb.galera.initializer', 'defined')
-          | selectattr('mariadb.galera.initializer', 'true')
-          | first)
-        .mariadb_root_password.content
-        | b64decode }}
+        {{ (groups[environment_name]
+             | intersect(groups.galera_cluster)
+             | map('extract', hostvars)
+             | selectattr('mariadb.galera.initializer', 'defined')
+             | selectattr('mariadb.galera.initializer', 'true')
+             | first)
+           .mariadb_root_password.content
+           | b64decode }}
+      owner: "{{ item.owner }}"
+      group: "{{ item.group }}"
+    loop:
+      - path: /root/.my.cnf
+        owner: "{{ mariadb.system.user.root.name }}"
+        group: "{{ mariadb.system.user.root.group }}"
+      - path: "{{ ansible_user_dir }}/.my.cnf"
+        owner: "{{ ansible_user_uid }}"
+        group: "{{ ansible_user_gid }}"
+    loop_control:
+      label: "{{ item.path }}"
 
   - name: Wait that node has joined cluster
     when: not mariadb.galera.initializer
