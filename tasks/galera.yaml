@@ -86,6 +86,19 @@
     when: not mariadb.galera.initializer
     shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
+  # a.k.a start garbd
+  - meta: flush_handlers
+
+  - name: Restart initializer node to stop bottestrap and rejoin cluster
+    when: mariadb.galera.initializer
+    service:
+      name: mariadb
+      state: restarted
+
+  - name: Wait that node has rejoined cluster
+    when: mariadb.galera.initializer
+    shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
+
   when:
     - mariadb.galera.cluster
     - not mariadb.galera.arbitrator
