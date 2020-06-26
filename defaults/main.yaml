@@ -25,6 +25,12 @@ mariadb:
     {%- endif -%}
   config:
     filename: my.cnf
+  service: >-
+    {%- if ansible_system == 'Linux' -%}
+      mysql
+    {%- else -%}
+      mysql-server
+    {%- endif -%}
   databases: {}
   database_defaults:
     encoding: utf8mb4

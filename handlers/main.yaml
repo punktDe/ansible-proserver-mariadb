@@ -1,13 +1,13 @@
 ---
 - name: Start MariaDB
   service:
-    name: "{% if ansible_distribution == 'Ubuntu' %}mysql{% else %}mysql-server{% endif %}"
+    name: "{{ mariadb.service }}"
     state: started
   register: mysqld_service_result
 
 - name: Restart MariaDB
   service:
-    name: "{% if ansible_distribution == 'Ubuntu' %}mysql{% else %}mysql-server{% endif %}"
+    name: "{{ mariadb.service }}"
     state: restarted
   when: not (mysqld_service_result is defined and mysqld_service_result.changed)
 
