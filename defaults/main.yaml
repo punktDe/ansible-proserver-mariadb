@@ -19,7 +19,7 @@ mariadb:
       {%- endif -%}
   socket: >-
     {%- if ansible_system == 'Linux' -%}
-      /var/run/mysqld/mysqld.sock
+      /run/mysqld/mysqld.sock
     {%- else -%}
       /tmp/mysql.sock
     {%- endif -%}
