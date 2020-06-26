@@ -38,8 +38,8 @@ mariadb:
       max_wait: 300
       check_pause: 1
   repository:
-    mirror: mirror2.hs-esslingen.de
     apt:
+      mirror: http://mirror2.hs-esslingen.de/mariadb
       key_url: https://mariadb.org/mariadb_release_signing_key.asc
-      repository: "deb http://{{ vars.mariadb.repository.mirror }}/mariadb/repo/{{ vars.mariadb.version }}/ubuntu focal main"
+      repository: "deb {{ vars.mariadb.repository.apt.mirror }}/repo/{{ vars.mariadb.version }}/ubuntu focal main"
   #version:
