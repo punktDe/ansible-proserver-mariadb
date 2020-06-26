@@ -42,11 +42,35 @@
     when: mariadb.galera.initializer
     shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
+  - name: Read database root password from initializer
+    when: mariadb.galera.initializer
+    slurp:
+      src: /root/.my.cnf
+    register: mariadb_root_password
+    changed_when: false
+
   - name: Join cluster
     when: not mariadb.galera.initializer
     service:
       name: mariadb
       state: started
+
+  - name: Write root password to joiner nodes
+    when:
+      - not mariadb.galera.initializer
+      - not mariadb.galera.arbitrator
+    copy:
+      dest: /root/.my.cnf
+      content: >
+        {{
+        (groups[environment_name]
+          | intersect(groups.galera_cluster)
+          | map('extract', hostvars)
+          | selectattr('mariadb.galera.initializer', 'defined')
+          | selectattr('mariadb.galera.initializer', 'true')
+          | first)
+        .mariadb_root_password.content
+        | b64decode }}
 
   - name: Wait that node has joined cluster
     when: not mariadb.galera.initializer
