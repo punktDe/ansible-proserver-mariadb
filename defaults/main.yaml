@@ -49,3 +49,11 @@ mariadb:
       key_url: https://mariadb.org/mariadb_release_signing_key.asc
       repository: "deb {{ vars.mariadb.repository.apt.mirror }}/repo/{{ vars.mariadb.version }}/ubuntu focal main"
   #version:
+mariadb_galera_cluster_nodes: >-
+  {%- set cluster_nodes = [] -%}
+  {%- for node, node_vars in hostvars.items() -%}
+    {%- if (((node_vars.mariadb|default({}))['my.cnf']|default({}))['galera']|default({}))['wsrep_cluster_name']|default('') == mariadb['my.cnf'].galera.wsrep_cluster_name -%}
+      {%- set _ = cluster_nodes.append(node) -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {{- cluster_nodes -}}

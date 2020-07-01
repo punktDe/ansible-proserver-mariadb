@@ -37,11 +37,10 @@
   vars:
     mariadb_root_password: >-
       {%- if mariadb.galera.cluster and not mariadb.galera.initializer -%}
-        {{- (groups[environment_name]
-                    | intersect(groups.galera_cluster)
+        {{- (mariadb_galera_cluster_nodes
                     | map('extract', hostvars)
                     | selectattr('mariadb.galera.initializer', 'defined')
-                    |selectattr('mariadb.galera.initializer', 'true')
+                    | selectattr('mariadb.galera.initializer', 'true')
                     | first)
                    .mariadb_slurp_result.results.0.content|b64decode|trim -}}
       {%- else -%}
