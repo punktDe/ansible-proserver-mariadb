@@ -1,9 +1,59 @@
 ---
 mariadb:
+  system:
+    user:
+      root:
+        name: root
+        group: >-
+          {%- if ansible_system == 'Linux' -%}
+            root
+          {%- else -%}
+            wheel
+          {%- endif -%}
   prefix:
-    config: /usr/local/etc
+    config: >-
+      {%- if ansible_system == 'Linux' -%}
+        /etc/mysql
+      {%- else -%}
+        /usr/local/etc
+      {%- endif -%}
+  socket: >-
+    {%- if ansible_system == 'Linux' -%}
+      /run/mysqld/mysqld.sock
+    {%- else -%}
+      /tmp/mysql.sock
+    {%- endif -%}
+  config:
+    filename: my.cnf
+  service: >-
+    {%- if ansible_system == 'Linux' -%}
+      mysql
+    {%- else -%}
+      mysql-server
+    {%- endif -%}
   databases: {}
   database_defaults:
     encoding: utf8mb4
     collation: utf8mb4_unicode_ci
   my.cnf: {}
+  galera:
+    cluster: no
+    initializer: no
+    arbitrator: no
+    join:
+      max_wait: 300
+      check_pause: 1
+  repository:
+    apt:
+      mirror: http://mirror2.hs-esslingen.de/mariadb
+      key_url: https://mariadb.org/mariadb_release_signing_key.asc
+      repository: "deb {{ vars.mariadb.repository.apt.mirror }}/repo/{{ vars.mariadb.version }}/ubuntu focal main"
+  version:
+mariadb_galera_cluster_nodes: >-
+  {%- set cluster_nodes = [] -%}
+  {%- for node, node_vars in hostvars.items() -%}
+    {%- if (((node_vars.mariadb|default({}))['my.cnf']|default({}))['galera']|default({}))['wsrep_cluster_name']|default('') == ((mariadb['my.cnf']|default({})).galera|default({})).wsrep_cluster_name|default('') -%}
+      {%- set _ = cluster_nodes.append(node) -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {{- cluster_nodes -}}

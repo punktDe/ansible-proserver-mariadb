@@ -1,0 +1,7 @@
+---
+- name: Confiure garb (garb.cnf)
+  when: mariadb.galera.arbitrator == True
+  template:
+    src: garb.cnf
+    dest: /etc/default/garb.cnf
+  notify: Restart garb

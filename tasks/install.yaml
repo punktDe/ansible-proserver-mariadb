@@ -1,0 +1,35 @@
+- when: ansible_distribution == 'Ubuntu'
+  block:
+    - name: Add MariaDB repository key
+      apt_key:
+        url: "{{ mariadb.repository.apt.key_url }}"
+
+    - name: Add MariaDB repository
+      loop:
+        - /etc/apt/sources.list.d/mariadb.list
+      apt_repository:
+        repo: "{{ mariadb.repository.apt.repository }}"
+        filename: "{{ item }}"
+      register: mariadb_add_apt_repository
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      when: mariadb_add_apt_repository.changed
+
+- name: Install MariaDB
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - not mariadb.galera.arbitrator
+  apt:
+    name:
+      - mariadb-server
+      - python3-pymysql
+
+- name: Install garb
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - mariadb.galera.arbitrator
+  apt:
+    name:
+      - galera-arbitrator-3

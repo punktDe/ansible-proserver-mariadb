@@ -1,10 +1,12 @@
 ---
 - name: Create users and database grants
+  when: not mariadb.galera.cluster or mariadb.galera.initializer
   mysql_user:
     name: "{{ username }}"
     password: "{{ password }}"
     host: "{{ host }}"
     priv: "{{ priv }}"
+    login_unix_socket: "{{ mariadb.socket if mariadb.socket else none }}"
   loop_control:
     label: "{{ username }}@{{ host }} priv={{ priv }}"
   vars:
@@ -15,3 +17,4 @@
   with_subelements:
     - "{{ mariadb.users.values()|mariadb_subelem_dicts_to_list('hosts') }}"
     - hosts
+  no_log: yes

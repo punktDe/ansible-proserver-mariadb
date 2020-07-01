@@ -1,0 +1,77 @@
+---
+- name: Check if grastate.dat exists
+  stat:
+    path: /var/lib/mysql/grastate.dat
+  register: mariadb_grastate
+  changed_when: false
+
+- name: Check if cluster is save to bootstrap
+  when: mariadb_grastate.stat.exists
+  slurp:
+    path: /var/lib/mysql/grastate.dat
+  register: mariadb_bootstrap
+  changed_when: false
+
+- name: Check if MariaDB is already runnning
+  stat:
+    path: /var/run/mysqld/mysqld.pid
+  register: mariadb_pid
+  changed_when: false
+
+- name: Fail if cluster cannot be initialzed
+  when:
+    - mariadb.galera.initializer
+    - mariadb_bootstrap.content is defined
+    - "'Safe to Bootstrap: 0' in mariadb_bootstrap.content | b64decode"
+    - not mariadb_pid.stat.exists
+  fail:
+    msg: "cluster initializer is not ready to bootstrap cluster"
+
+- when:
+    - mariadb.galera.cluster
+    - >
+      not mariadb_grastate.stat.exists
+      or 'Safe to Bootstrap: 1' in mariadb_bootstrap.content | b64decode
+      or not mariadb.galera.initializer and not mariadb_pid.stat.exists
+
+  block:
+
+  - name: Stop MariaDB
+    when: not mariadb.galera.arbitrator
+    service:
+      name: mariadb
+      state: stopped
+
+  - name: Initialize cluster
+    when: mariadb.galera.initializer
+    command: /usr/bin/galera_new_cluster
+
+  - name: Wait until cluster is initialized
+    when: mariadb.galera.initializer
+    shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
+
+  - name: Join cluster
+    when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
+    service:
+      name: mariadb
+      state: started
+
+  - name: Wait until node has joined cluster
+    when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
+    shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
+
+  - name: Start garb
+    when: mariadb.galera.arbitrator
+    service:
+      name: garb
+      state: started
+
+  - name: Restart initializer node to stop bootstrap and rejoin cluster
+    when: mariadb.galera.initializer
+    service:
+      name: mariadb
+      state: restarted
+
+  - name: Wait that node has rejoined cluster
+    when: mariadb.galera.initializer
+    shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"

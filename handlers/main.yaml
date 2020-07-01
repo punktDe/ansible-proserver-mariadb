@@ -1,12 +1,17 @@
 ---
 - name: Start MariaDB
   service:
-    name: mysql-server
+    name: "{{ mariadb.service }}"
     state: started
   register: mysqld_service_result
 
 - name: Restart MariaDB
   service:
-    name: mysql-server
+    name: "{{ mariadb.service }}"
     state: restarted
   when: not (mysqld_service_result is defined and mysqld_service_result.changed)
+
+- name: Restart garb
+  service:
+    name: garb
+    state: restarted

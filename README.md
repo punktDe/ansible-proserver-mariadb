@@ -99,3 +99,8 @@ mariadb:
       privileges:
         example_privilege: "example.*:all"
 ```
+
+
+## Further Documentation
+
+* [Galera Cluster](./documentation/galera.md)
