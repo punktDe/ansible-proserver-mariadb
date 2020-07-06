@@ -5,7 +5,7 @@ Ansible role to configure MariaDB on a proServer.
 ## Requirements
 
 - A proServer
-- Ansible >=2.4.0
+- Ansible >=2.9.0
 - Ansible option `hash_behaviour` set to `merge`
 
 ## Configuration

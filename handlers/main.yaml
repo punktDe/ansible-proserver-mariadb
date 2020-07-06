@@ -6,6 +6,7 @@
   register: mysqld_service_result
 
 - name: Restart MariaDB
+  throttle: 1
   service:
     name: "{{ mariadb.service }}"
     state: restarted

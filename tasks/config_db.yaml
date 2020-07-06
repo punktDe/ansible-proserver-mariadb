@@ -12,4 +12,4 @@
   with_items: "{{ mariadb['my.cnf']|mariadb_ini_helper }}"
   vars:
     config_filepath: "{{ mariadb.prefix.config }}/{{ mariadb.config.filename }}"
-  notify: "{{ 'Restart MariaDB' if mariadb.galera.cluster == False else 'Start MariaDB' }}"
+  notify: Restart MariaDB
