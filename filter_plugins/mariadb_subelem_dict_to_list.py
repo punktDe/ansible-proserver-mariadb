@@ -1,3 +1,6 @@
+import itertools
+
+
 def mariadb_subelem_dicts_to_list(dicts, path):
     result = []
     for dictelem in dicts:
@@ -5,7 +8,7 @@ def mariadb_subelem_dicts_to_list(dicts, path):
         for pathelem in path.split('.'):
             prev_subelem = subelem
             subelem = subelem[pathelem]
-        prev_subelem[pathelem] = list(subelem.values())
+        prev_subelem[pathelem] = list(itertools.chain.from_iterable(subelem.values()))
         result.append(dictelem)
     return result
 
@@ -24,7 +27,11 @@ def mariadb_subelem_dicts_to_list_test():
             'a': {
                 'b': {
                     'e': 'i',
-                    'f': 'j',
+                    'f': [
+                        'j',
+                        'k',
+                        'l',
+                    ],
                 }
             }
         }
@@ -43,6 +50,8 @@ def mariadb_subelem_dicts_to_list_test():
                 'b': [
                     'i',
                     'j',
+                    'k',
+                    'l',
                 ]
             }
         }
