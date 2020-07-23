@@ -21,32 +21,20 @@
         src: "{{ item }}"
       with_items:
         - /usr/local/etc/mysql-password
-      register: mariadb_slurp_result
+      register: mariadb_root_password_slurp_result
 
     - name: Set root password in database
       mysql_user:
         login_user: root
-        login_password: "{{ mariadb_slurp_result.results.0.content|b64decode|trim }}"
+        login_password: "{{ mariadb_root_password_slurp_result.results.0.content|b64decode|trim }}"
         check_implicit_admin: yes
         name: root
-        password: "{{ mariadb_slurp_result.results.0.content|b64decode|trim }}"
+        password: "{{ mariadb_root_password_slurp_result.results.0.content|b64decode|trim }}"
         host: localhost
         login_unix_socket: "{{ mariadb.socket if mariadb.socket else none }}"
 
 - name: Write root password to cli client configuration file
   when: not mariadb.galera.cluster or not mariadb.galera.arbitrator
-  vars:
-    mariadb_root_password: >-
-      {%- if mariadb.galera.cluster and not mariadb.galera.initializer -%}
-        {{- (mariadb_galera_cluster_nodes
-                    | map('extract', hostvars)
-                    | selectattr('mariadb.galera.initializer', 'defined')
-                    | selectattr('mariadb.galera.initializer', 'true')
-                    | first)
-                   .mariadb_slurp_result.results.0.content|b64decode|trim -}}
-      {%- else -%}
-        {{- mariadb_slurp_result.results.0.content|b64decode|trim -}}
-      {%- endif -%}
   blockinfile:
     path: "{{ item.path }}"
     owner: "{{ item.owner }}"

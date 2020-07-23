@@ -55,6 +55,17 @@ mariadb:
           {{- none -}}
         {%- endif -%}
   version:
+mariadb_root_password: >-
+  {%- if mariadb.galera.cluster and not mariadb.galera.initializer -%}
+    {{- (mariadb_galera_cluster_nodes
+                | map('extract', hostvars)
+                | selectattr('mariadb.galera.initializer', 'defined')
+                | selectattr('mariadb.galera.initializer', 'true')
+                | first)
+               .mariadb_root_password_slurp_result.results.0.content|b64decode|trim -}}
+  {%- else -%}
+    {{- mariadb_root_password_slurp_result.results.0.content|b64decode|trim -}}
+  {%- endif -%}
 mariadb_galera_cluster_nodes: >-
   {%- set cluster_nodes = [] -%}
   {%- for node, node_vars in hostvars.items() -%}
