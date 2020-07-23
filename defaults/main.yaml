@@ -47,7 +47,12 @@ mariadb:
     apt:
       mirror: http://mirror2.hs-esslingen.de/mariadb
       key_url: https://mariadb.org/mariadb_release_signing_key.asc
-      repository: "deb {{ vars.mariadb.repository.apt.mirror }}/repo/{{ vars.mariadb.version }}/ubuntu focal main"
+      repository: >-
+        {%- if vars.mariadb.version -%}
+          deb {{ vars.mariadb.repository.apt.mirror }}/repo/{{ vars.mariadb.version }}/ubuntu focal main
+        {%- else -%}
+          {{- none -}}
+        {%- endif -%}
   version:
 mariadb_galera_cluster_nodes: >-
   {%- set cluster_nodes = [] -%}
