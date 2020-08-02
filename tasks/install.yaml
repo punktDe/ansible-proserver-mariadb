@@ -18,14 +18,25 @@
         update_cache: yes
       when: mariadb_add_apt_repository.changed
 
-- name: Install MariaDB
-  when:
+- when:
     - ansible_distribution == 'Ubuntu'
     - not mariadb.galera.arbitrator
-  apt:
-    name:
-      - mariadb-server
-      - python3-pymysql
+  block:
+    - name: Ensure data dir is mounted before MariaDB is started
+      loop:
+        - /etc/systemd/system/mariadb.service.d/UnitRequiresMountsFor.conf
+      ini_file:
+        path: "{{ item }}"
+        create: yes
+        section: Unit
+        option: RequiresMountsFor
+        value: /var/lib/mysql
+
+    - name: Install MariaDB
+      apt:
+        name:
+          - mariadb-server
+          - python3-pymysql
 
 - name: Install garb
   when:
