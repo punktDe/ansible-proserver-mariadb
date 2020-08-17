@@ -1,4 +1,5 @@
 [Service]
+Type=oneshot
 {# mysqldump uses the HOME environment variable to locate .my.cnf #}
 Environment=HOME=%h
 ExecStart=/usr/local/bin/mariadb-backup
