@@ -1,9 +1,11 @@
 - when: "true in ([mariadb.backup.enabled] + (mariadb.databases.values()|selectattr('backup.enabled', 'defined')|map(attribute='backup.enabled')|list))"
   block:
     - name: Template MariaDB backup script
+      loop:
+        - /usr/local/bin/mariadb-backup
       template:
         src: backup/mariadb-backup
-        dest: /usr/local/bin/mariadb-backup
+        dest: "{{ item }}"
         mode: a+x
 
     - name: Template systemd units for MariaDB backups
