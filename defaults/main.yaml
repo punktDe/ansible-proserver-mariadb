@@ -44,6 +44,19 @@ mariadb:
     join:
       max_wait: 300
       check_pause: 1
+  backup:
+    enabled: no
+    timer: |
+      OnCalendar=*-*-* 00:00:00
+      RandomizedDelaySec=6h
+    mysqldump:
+      '0': mysqldump
+      50_single_transaction: --single-transaction
+    compression:
+      enabled: yes
+      command: gzip
+      extension: gz
+    dest: /var/mariadb-backups
   repository:
     apt:
       mirror: http://mirror2.hs-esslingen.de/mariadb

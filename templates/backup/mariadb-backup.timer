@@ -1,0 +1,5 @@
+[Timer]
+{{ mariadb.backup.timer }}
+
+[Install]
+WantedBy=timers.target

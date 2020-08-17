@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -e -u -o pipefail
+
+{% for database in mariadb.databases|dict2items|sort(attribute='key')|map(attribute='value')|reject('none') %}
+{% set database_backup_enabled = database.backup.enabled|default(mariadb.backup.enabled) %}
+{% if database_backup_enabled %}
+{% set database_backup_dest = database.backup.dest|default(mariadb.backup.dest) %}
+{% set database_backup_mysqldump = mariadb.backup.mysqldump.copy() %}
+{% set _ = database_backup_mysqldump.update(database.backup.mysqldump|default({})) %}
+{% set database_backup_compression = mariadb.backup.compression.copy() %}
+{% set _ = database_backup_compression.update(database.backup.compression|default({})) %}
+{% set database_backup_file = database_backup_dest + '/' + database.name + '.sql' + (('.' + database_backup_compression.extension) if database_backup_compression.enabled else '') %}
+mkdir -p -- {{ database_backup_dest }}
+if {{ database_backup_mysqldump|dict2items|sort(attribute='key')|map(attribute='value')|reject('none')|map('quote')|join(' ') }} -- {{ database.name|quote }} {% if database_backup_compression.enabled %}| {{ database_backup_compression.command }} {% endif %}> {{ database_backup_file|quote }}.tmp; then
+    mv -- {{ database_backup_file|quote }}.tmp {{ database_backup_file|quote }}
+fi
+{% endif %}
+{% endfor %}
