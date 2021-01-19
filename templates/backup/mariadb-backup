@@ -12,6 +12,7 @@ rc=0
 {% set _ = database_backup_compression.update(database.backup.compression|default({})) %}
 {% set database_backup_file = database_backup_dest + '/' + database.name + '.sql' + (('.' + database_backup_compression.extension) if database_backup_compression.enabled else '') %}
 mkdir -p -- {{ database_backup_dest }}
+(umask 0077 && touch {{ database_backup_file|quote }}.tmp)
 if {{ database_backup_mysqldump|dict2items|sort(attribute='key')|map(attribute='value')|reject('none')|map('quote')|join(' ') }} -- {{ database.name|quote }} {% if database_backup_compression.enabled %}| {{ database_backup_compression.command }} {% endif %}> {{ database_backup_file|quote }}.tmp; then
     mv -- {{ database_backup_file|quote }}.tmp {{ database_backup_file|quote }}
 else

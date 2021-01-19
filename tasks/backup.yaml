@@ -6,7 +6,7 @@
       template:
         src: backup/mariadb-backup
         dest: "{{ item }}"
-        mode: a+x
+        mode: u+rwx,go-rwx
 
     - name: Template systemd units for MariaDB backups
       loop:
