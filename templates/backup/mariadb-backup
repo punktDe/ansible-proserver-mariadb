@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e -u -o pipefail
 
+rc=0
 {% for database in mariadb.databases|dict2items|sort(attribute='key')|map(attribute='value')|reject('none') %}
 {% set database_backup_enabled = database.backup.enabled|default(mariadb.backup.enabled) %}
 {% if database_backup_enabled %}
@@ -13,6 +14,9 @@ set -e -u -o pipefail
 mkdir -p -- {{ database_backup_dest }}
 if {{ database_backup_mysqldump|dict2items|sort(attribute='key')|map(attribute='value')|reject('none')|map('quote')|join(' ') }} -- {{ database.name|quote }} {% if database_backup_compression.enabled %}| {{ database_backup_compression.command }} {% endif %}> {{ database_backup_file|quote }}.tmp; then
     mv -- {{ database_backup_file|quote }}.tmp {{ database_backup_file|quote }}
+else
+    rc=1
 fi
 {% endif %}
 {% endfor %}
+exit $rc
