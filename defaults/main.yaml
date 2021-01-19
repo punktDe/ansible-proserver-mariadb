@@ -52,6 +52,7 @@ mariadb:
     mysqldump:
       '0': mysqldump
       50_single_transaction: --single-transaction
+    structure_only: {}
     compression:
       enabled: yes
       command: gzip
