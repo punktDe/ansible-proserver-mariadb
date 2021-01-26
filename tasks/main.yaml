@@ -1,9 +1,9 @@
 ---
 - import_tasks: install.yaml
-- import_tasks: users.yaml
-- import_tasks: client_config.yaml
 - import_tasks: config_db.yaml
 - import_tasks: config_garb.yaml
 - import_tasks: galera.yaml
+- import_tasks: client_config.yaml
+- import_tasks: users.yaml
 - import_tasks: databases.yaml
 - import_tasks: backup.yaml
