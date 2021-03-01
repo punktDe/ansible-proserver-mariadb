@@ -58,6 +58,8 @@ mariadb:
       command: gzip
       extension: gz
     dest: /var/mariadb-backups
+    send_application_event: no
+    application_event_log: /var/log/application_events/MariaDB-Backup.log
   repository:
     apt:
       mirror: http://mirror2.hs-esslingen.de/mariadb
