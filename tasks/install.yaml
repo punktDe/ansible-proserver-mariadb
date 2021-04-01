@@ -1,6 +1,6 @@
 - when: ansible_distribution == 'Ubuntu' and mariadb.repository.apt.repository
   block:
-    - name: Install gpg
+    - name: Install GPG
       apt:
         name: gpg
 
