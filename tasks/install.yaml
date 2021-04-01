@@ -1,5 +1,9 @@
 - when: ansible_distribution == 'Ubuntu' and mariadb.repository.apt.repository
   block:
+    - name: Install gpg
+        apt:
+          name: gpg
+
     - name: Add MariaDB repository key
       apt_key:
         url: "{{ mariadb.repository.apt.key_url }}"
