@@ -1,15 +1,24 @@
 ---
-- name: Configure MariaDB (my.cnf)
-  when: not mariadb.galera.arbitrator
-  ini_file:
-    path: "{{ config_filepath }}"
-    section: "{{ item.section }}"
-    option: "{{ item.option }}"
-    value: "{{ item.value }}"
-    state: "{{ 'present' if item.value is not none else 'absent' }}"
-  loop_control:
-    label: "{{ config_filepath }} {{ item.section }}.{{ item.option }}={{ item.value }}"
-  with_items: "{{ mariadb['my.cnf']|mariadb_ini_helper }}"
-  vars:
-    config_filepath: "{{ mariadb.prefix.config }}/{{ mariadb.config.filename }}"
-  notify: Restart MariaDB
+- when: not mariadb.galera.arbitrator
+  block:
+    - name: Configure MariaDB (my.cnf)
+      ini_file:
+        path: "{{ config_filepath }}"
+        section: "{{ item.section }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        state: "{{ 'present' if item.value is not none else 'absent' }}"
+      loop_control:
+        label: "{{ config_filepath }} {{ item.section }}.{{ item.option }}={{ item.value }}"
+      with_items: "{{ mariadb['my.cnf']|mariadb_ini_helper }}"
+      vars:
+        config_filepath: "{{ mariadb.prefix.config }}/{{ 'conf.d/zz-ansible.cnf' if ansible_system == 'Linux' else 'my.cnf' }}"
+      notify: Restart MariaDB
+
+    - name: Ensure MariaDB config set by Ansible overrules package defaults
+      when: ansible_system == 'Linux'
+      file:
+        dest: "{{ mariadb.prefix.config }}/mariadb.conf.d/zz-ansible.cnf"
+        src: ../conf.d/zz-ansible.cnf
+        state: link
+      notify: Restart MariaDB

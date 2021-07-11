@@ -23,13 +23,6 @@ mariadb:
     {%- else -%}
       /tmp/mysql.sock
     {%- endif -%}
-  config:
-    filename: >-
-      {%- if ansible_system == 'Linux' -%}
-        conf.d/zz-ansible.cnf
-      {%- else -%}
-        my.cnf
-      {%- endif -%}
   service: >-
     {%- if ansible_system == 'Linux' -%}
       mysql
