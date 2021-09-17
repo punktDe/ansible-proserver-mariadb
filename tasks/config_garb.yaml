@@ -1,6 +1,6 @@
 ---
 - name: Confiure garb (garb.cnf)
-  when: mariadb.galera.arbitrator == True
+  when: mariadb.galera.arbitrator
   template:
     src: garb.cnf
     dest: /etc/default/garb
