@@ -71,6 +71,7 @@
         service:
           name: garb
           state: started
+        register: mariadb_service_garb_start_result
 
   - name: Restart initializer node to stop bootstrap and rejoin cluster
     when: mariadb.galera.initializer

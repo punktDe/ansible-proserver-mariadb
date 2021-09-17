@@ -16,3 +16,4 @@
   service:
     name: garb
     state: restarted
+  when: not mariadb_service_garb_start_result.changed
