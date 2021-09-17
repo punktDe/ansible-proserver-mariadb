@@ -3,5 +3,5 @@
   when: mariadb.galera.arbitrator == True
   template:
     src: garb.cnf
-    dest: /etc/default/garb.cnf
+    dest: /etc/default/garb
   notify: Restart garb
