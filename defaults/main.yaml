@@ -60,14 +60,8 @@ mariadb:
     application_event_log: /var/log/application_events/MariaDB-Backup.log
   repository:
     apt:
-      mirror: http://mirror2.hs-esslingen.de/mariadb
-      key_url: https://mariadb.org/mariadb_release_signing_key.asc
-      repository: >-
-        {%- if vars.mariadb.version -%}
-          deb {{ vars.mariadb.repository.apt.mirror }}/repo/{{ vars.mariadb.version }}/ubuntu focal main
-        {%- else -%}
-          {{- none -}}
-        {%- endif -%}
+      key_url:
+      repository:
   version:
 mariadb_root_password: >-
   {%- if mariadb.galera.cluster and not mariadb.galera.initializer -%}
