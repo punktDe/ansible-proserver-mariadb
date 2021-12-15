@@ -16,7 +16,7 @@
       notify: Restart MariaDB
 
     - name: Ensure MariaDB config set by Ansible overrules package defaults
-      when: ansible_system == 'Linux'
+      when: "ansible_system == 'Linux' and mariadb['my.cnf']"
       file:
         dest: "{{ mariadb.prefix.config }}/mariadb.conf.d/zz-ansible.cnf"
         src: ../conf.d/zz-ansible.cnf
