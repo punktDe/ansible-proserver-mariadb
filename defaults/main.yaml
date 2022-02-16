@@ -15,7 +15,7 @@ mariadb:
       {%- if ansible_system == 'Linux' -%}
         /etc/mysql
       {%- else -%}
-        /usr/local/etc
+        /usr/local/etc/mysql
       {%- endif -%}
   socket: >-
     {%- if ansible_system == 'Linux' -%}
