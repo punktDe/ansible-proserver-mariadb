@@ -62,10 +62,34 @@
 
   - when: mariadb.galera.arbitrator
     block:
+      - name: Create garb working directory
+        when: ansible_system == 'Linux'
+        file:
+          path: /var/lib/garbd
+          owner: nobody
+          group: nogroup
+          mode: 0755
+          state: directory
+
+      - name: Add working directory parameter to systemd service (Linux)
+        when: ansible_system == 'Linux'
+        register: workingdirectory
+        lineinfile:
+          state: present
+          path: /usr/lib/systemd/system/garb.service
+          regexp: "^WorkingDirectory"
+          insertafter: "^After=network.target"
+          line: "WorkingDirectory=/var/lib/garbd"
+
       - name: Enable garb
         service:
           name: garb
           enabled: yes
+
+      - name: Systemd daemon-reload
+        when: ansible_system == 'Linux' and workingdirectory.changed
+        ansible.builtin.systemd:
+          daemon_reload: yes
 
       - name: Start garb
         service:
