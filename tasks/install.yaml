@@ -48,13 +48,13 @@
     - mariadb.galera.arbitrator
   block:
     - name: Insatll galera-arbitrator-4 (22.04)
-      when: ansible_distribution_release == 'jammy'
+      when: ansible_distribution_version is version('22.04', '>=')
       apt:
         name:
           - galera-arbitrator-4
 
     - name: Insatll galera-arbitrator-3 (20.04 and older)
-      when: ansible_distribution_release != 'jammy'
+      when: ansible_distribution_version is version('22.04', '<')
       apt:
         name:
           - galera-arbitrator-3
