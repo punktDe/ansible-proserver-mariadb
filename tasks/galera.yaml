@@ -78,7 +78,7 @@
           state: present
           path: /usr/lib/systemd/system/garb.service
           regexp: "^WorkingDirectory"
-          insertafter: "^After=network.target"
+          insertafter: "^ExecStart=.*"
           line: "WorkingDirectory=/var/lib/garbd"
 
       - name: Enable garb
