@@ -1,4 +1,6 @@
 ---
+apt_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+
 mariadb:
   system:
     user:
@@ -60,8 +62,8 @@ mariadb:
     application_event_log: /var/log/application_events/MariaDB-Backup.log
   repository:
     apt:
-      key_url:
-      repository:
+      key_url: https://mariadb.org/mariadb_release_signing_key.asc
+      repository: "deb [arch={{ apt_arch }}] http://mirror.netcologne.de/mariadb/repo/10.6/ubuntu {{ ansible_distribution_release }} main"
   version:
 mariadb_root_password: >-
   {%- if mariadb.galera.cluster and not mariadb.galera.initializer -%}
@@ -77,7 +79,7 @@ mariadb_root_password: >-
 mariadb_galera_cluster_nodes: >-
   {%- set cluster_nodes = [] -%}
   {%- for node, node_vars in hostvars.items() -%}
-    {%- if (((node_vars.mariadb|default({}))['my.cnf']|default({}))['galera']|default({}))['wsrep_cluster_name']|default('') == ((mariadb['my.cnf']|default({})).galera|default({})).wsrep_cluster_name|default('') -%}
+    {%- if (((node_vars.mariadb | default({}))['my.cnf'] | default({}))['galera'] | default({}))['wsrep_cluster_name'] | default('') == ((mariadb['my.cnf'] | default({})).galera | default({})).wsrep_cluster_name | default('') -%}
       {%- set _ = cluster_nodes.append(node) -%}
     {%- endif -%}
   {%- endfor -%}

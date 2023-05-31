@@ -1,6 +1,6 @@
 ---
 - name: Create databases
-  mysql_db:
+  community.mysql.mysql_db:
     name: "{{ db.value.name }}"
     encoding: "{{ encoding }}"
     collation: "{{ collation }}"
@@ -9,43 +9,42 @@
     - db.value
     - not mariadb.galera.cluster or mariadb.galera.initializer
   vars:
-    encoding: "{{ db.value.encoding|default(mariadb.database_defaults.encoding, true) }}"
-    collation: "{{ db.value.collation|default(mariadb.database_defaults.collation, true) }}"
+    encoding: "{{ db.value.encoding | default(mariadb.database_defaults.encoding, true) }}"
+    collation: "{{ db.value.collation | default(mariadb.database_defaults.collation, true) }}"
   loop_control:
     loop_var: db
     label: "{{ db.value.name }} encoding={{ encoding }} collation={{ collation }}"
   with_dict: "{{ mariadb.databases }}"
   register: mariadb_createdb_result
 
-- block:
-
-  - name: Upload database dumps
-    copy:
-      src: "{{ db.value.import_file }}"
-      dest: "{{ tmpfile }}"
-      mode: 0600
-    when:
-      - item.changed and db.value.import_file|default(none)
-      - not mariadb.galera.cluster or mariadb.galera.initializer
-    vars:
-      db: "{{ item.db }}"
-    loop_control:
-      label: "{{ tmpfile }}"
-    with_items: "{{ mariadb_createdb_result.results }}"
-
-  - name: Restore databases
-    mysql_db:
-      state: import
-      target: "{{ tmpfile }}"
-      name: "{{ db.value.name }}"
-    when:
-      - item.changed and db.value.import_file|default(none)
-      - not mariadb.galera.cluster or mariadb.galera.initializer
-    vars:
-      db: "{{ item.db }}"
-    loop_control:
-      label: "{{ db.value.name }} file={{ tmpfile }}"
-    with_items: "{{ mariadb_createdb_result.results }}"
-
+- name: Handle database dumps
   vars:
     tmpfile: "/tmp/mariadb-{{ db.key }}.sql"
+  block:
+    - name: Upload database dumps
+      ansible.builtin.copy:
+        src: "{{ db.value.import_file }}"
+        dest: "{{ tmpfile }}"
+        mode: 0600
+      when:
+        - item.changed and db.value.import_file|default(none)
+        - not mariadb.galera.cluster or mariadb.galera.initializer
+      vars:
+        db: "{{ item.db }}"
+      loop_control:
+        label: "{{ tmpfile }}"
+      with_items: "{{ mariadb_createdb_result.results }}"
+
+    - name: Restore databases
+      community.mysql.mysql_db:
+        state: import
+        target: "{{ tmpfile }}"
+        name: "{{ db.value.name }}"
+      when:
+        - item.changed and db.value.import_file|default(none)
+        - not mariadb.galera.cluster or mariadb.galera.initializer
+      vars:
+        db: "{{ item.db }}"
+      loop_control:
+        label: "{{ db.value.name }} file={{ tmpfile }}"
+      with_items: "{{ mariadb_createdb_result.results }}"

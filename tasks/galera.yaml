@@ -1,19 +1,19 @@
 ---
 - name: Check if grastate.dat exists
-  stat:
+  ansible.builtin.stat:
     path: /var/lib/mysql/grastate.dat
   register: mariadb_grastate
   changed_when: false
 
 - name: Check if cluster is save to bootstrap
   when: mariadb_grastate.stat.exists
-  slurp:
+  ansible.builtin.slurp:
     path: /var/lib/mysql/grastate.dat
   register: mariadb_bootstrap
   changed_when: false
 
 - name: Check if MariaDB is already runnning
-  stat:
+  ansible.builtin.stat:
     path: /var/run/mysqld/mysqld.pid
   register: mariadb_pid
   changed_when: false
@@ -24,85 +24,93 @@
     - mariadb_bootstrap.content is defined
     - "'Safe to Bootstrap: 0' in mariadb_bootstrap.content | b64decode"
     - not mariadb_pid.stat.exists
-  fail:
+  ansible.builtin.fail:
     msg: "cluster initializer is not ready to bootstrap cluster"
 
-- when:
+- name: Bootstrap the cluster
+  when:
     - mariadb.galera.cluster
     - >
       not mariadb_grastate.stat.exists
       or 'Safe to Bootstrap: 1' in mariadb_bootstrap.content | b64decode
       or not mariadb.galera.initializer and not mariadb_pid.stat.exists
-
   block:
+    - name: Stop MariaDB
+      when: not mariadb.galera.arbitrator
+      ansible.builtin.service:
+        name: mariadb
+        state: stopped
 
-  - name: Stop MariaDB
-    when: not mariadb.galera.arbitrator
-    service:
-      name: mariadb
-      state: stopped
+    - name: Initialize cluster
+      changed_when: yes
+      when: mariadb.galera.initializer
+      ansible.builtin.command:
+        cmd: /usr/bin/galera_new_cluster
 
-  - name: Initialize cluster
-    when: mariadb.galera.initializer
-    command: /usr/bin/galera_new_cluster
+    - name: Wait until cluster is initialized
+      changed_when: yes
+      when: mariadb.galera.initializer
+      ansible.builtin.shell:
+        cmd: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
-  - name: Wait until cluster is initialized
-    when: mariadb.galera.initializer
-    shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
+    - name: Join cluster
+      when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
+      ansible.builtin.service:
+        name: mariadb
+        state: started
 
-  - name: Join cluster
-    when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
-    service:
-      name: mariadb
-      state: started
+    - name: Wait until node has joined cluster
+      when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
+      changed_when: yes
+      ansible.builtin.shell:
+        cmd: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
-  - name: Wait until node has joined cluster
-    when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
-    shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
+    - name: Set up garb service
+      when: mariadb.galera.arbitrator
+      block:
+        - name: Create garb working directory
+          when: ansible_system == 'Linux'
+          ansible.builtin.file:
+            path: /var/lib/garbd
+            owner: nobody
+            group: nogroup
+            mode: 0755
+            state: directory
 
-  - when: mariadb.galera.arbitrator
-    block:
-      - name: Create garb working directory
-        when: ansible_system == 'Linux'
-        file:
-          path: /var/lib/garbd
-          owner: nobody
-          group: nogroup
-          mode: 0755
-          state: directory
+        - name: Add working directory parameter to systemd service (Linux)
+          when: ansible_system == 'Linux'
+          register: workingdirectory
+          ansible.builtin.lineinfile:
+            state: present
+            path: /usr/lib/systemd/system/garb.service
+            regexp: "^WorkingDirectory"
+            insertafter: "^ExecStart=.*"
+            line: "WorkingDirectory=/var/lib/garbd"
 
-      - name: Add working directory parameter to systemd service (Linux)
-        when: ansible_system == 'Linux'
-        register: workingdirectory
-        lineinfile:
-          state: present
-          path: /usr/lib/systemd/system/garb.service
-          regexp: "^WorkingDirectory"
-          insertafter: "^ExecStart=.*"
-          line: "WorkingDirectory=/var/lib/garbd"
+        - name: Enable garb
+          ansible.builtin.service:
+            name: garb
+            enabled: yes
 
-      - name: Enable garb
-        service:
-          name: garb
-          enabled: yes
+        - name: Systemd daemon-reload
+          when: ansible_system == 'Linux' and workingdirectory.changed
+          ansible.builtin.systemd:
+            daemon_reload: yes
 
-      - name: Systemd daemon-reload
-        when: ansible_system == 'Linux' and workingdirectory.changed
-        ansible.builtin.systemd:
-          daemon_reload: yes
+        - name: Start garb
+          ansible.builtin.service:
+            name: garb
+            state: started
+          register: mariadb_service_garb_start_result
 
-      - name: Start garb
-        service:
-          name: garb
-          state: started
-        register: mariadb_service_garb_start_result
+    - name: Restart initializer node to stop bootstrap and rejoin cluster
+      when: mariadb.galera.initializer
+      ansible.builtin.service:
+        name: mariadb
+        state: restarted
 
-  - name: Restart initializer node to stop bootstrap and rejoin cluster
-    when: mariadb.galera.initializer
-    service:
-      name: mariadb
-      state: restarted
-
-  - name: Wait that node has rejoined cluster
-    when: mariadb.galera.initializer
-    shell: "{{ lookup('template', 'has_joined_cluster.sh') }}"
+    - name: Wait that node has rejoined cluster
+      when: mariadb.galera.initializer
+      changed_when: yes
+      ansible.builtin.shell:
+        cmd: "{{ lookup('template', 'has_joined_cluster.sh') }}"

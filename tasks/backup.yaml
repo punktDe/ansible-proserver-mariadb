@@ -1,9 +1,15 @@
-- when: "true in ([mariadb.backup.enabled] + (mariadb.databases.values()|selectattr('backup.enabled', 'defined')|map(attribute='backup.enabled')|list))"
+---
+- name: Handle MariaDB Backups
+  when: >-
+    true in ([mariadb.backup.enabled] + (mariadb.databases.values() |
+    selectattr('backup.enabled', 'defined') |
+    map(attribute='backup.enabled') |
+    list))
   block:
     - name: Template MariaDB backup script
       loop:
         - /usr/local/bin/mariadb-backup
-      template:
+      ansible.builtin.template:
         src: backup/mariadb-backup
         dest: "{{ item }}"
         mode: u+rwx,go-rwx
@@ -12,12 +18,15 @@
       loop:
         - /etc/systemd/system/mariadb-backup.service
         - /etc/systemd/system/mariadb-backup.timer
-      template:
-        src: "backup/{{ item|basename }}"
+      ansible.builtin.template:
+        src: "backup/{{ item | basename }}"
+        owner: root
+        group: "{{ root_group }}"
+        mode: "0644"
         dest: "{{ item }}"
 
     - name: Enable and start systemd timer for MariaDB backups
-      systemd:
+      ansible.builtin.systemd:
         daemon_reload: yes
         name: mariadb-backup.timer
         enabled: yes

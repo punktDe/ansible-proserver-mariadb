@@ -1,7 +1,7 @@
 ---
 - name: Create users and database grants
   when: not mariadb.galera.cluster or mariadb.galera.initializer
-  mysql_user:
+  community.mysql.mysql_user:
     name: "{{ username }}"
     password: "{{ password }}"
     host: "{{ host }}"
@@ -15,5 +15,5 @@
     host: "{{ item.1 }}"
     priv: "{{ '/'.join(item.0.privileges.values()) }}"
   with_subelements:
-    - "{{ mariadb.users.values()|mariadb_subelem_dicts_to_list('hosts') }}"
+    - "{{ mariadb.users.values() | mariadb_subelem_dicts_to_list('hosts') }}"
     - hosts
