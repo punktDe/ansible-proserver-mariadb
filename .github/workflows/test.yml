@@ -1,6 +1,6 @@
 ---
 name: Test
-run-name: Run ansible-lint and molecule tests on the role
+run-name: Run molecule tests on the role
 on:
   push:
   workflow_dispatch:
@@ -9,24 +9,36 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the current branch
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.10"
+          python-version: '3.x'
 
-      - name: Install ansible-lint
-        run: pip install ansible ansible-lint
+      - name: Install dependencies.
+        run: pip3 install yamllint ansible-lint ansible
 
-      - name: Ansible-lint
-        run: ansible-lint
+      - name: Run ansible-lint
+        run: "ansible-lint"
 
   molecule:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          path: "${{ github.repository }}"
-      - uses: gofrolist/molecule-action@v2
+          python-version: '3.x'
+
+      - name: Install dependencies.
+        run: pip3 install yamllint ansible-lint ansible "molecule[lint,docker]"
+
+      - name: Install Galaxy dependencies.
+        run: ansible-galaxy collection install community.docker community.mysql
+
+      - name: Run molecule
+        run: "molecule test"
