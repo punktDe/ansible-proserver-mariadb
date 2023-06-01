@@ -4,5 +4,3 @@ repos:
     rev: v5.3.2
     hooks:
       - id: ansible-lint
-        args: [--offline]
-        files: \.(yaml|yml)$
