@@ -2,6 +2,7 @@
 apt_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
 
 mariadb:
+  version: 10.6
   prefix:
     config: >-
       {%- if ansible_system == 'Linux' -%}
@@ -53,8 +54,7 @@ mariadb:
   repository:
     apt:
       key_url: https://mariadb.org/mariadb_release_signing_key.asc
-      repository: "deb [arch={{ apt_arch }}] http://mirror.netcologne.de/mariadb/repo/10.6/{{ ansible_distribution | lower }} {{ ansible_distribution_release | lower }} main"
-  version:
+      repository: "deb [arch={{ apt_arch }}] http://mirror.netcologne.de/mariadb/repo/{{ vars.mariadb.version }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release | lower }} main"
 mariadb_root_password: >-
   {%- if mariadb.galera.cluster and not mariadb.galera.initializer -%}
     {{- (mariadb_galera_cluster_nodes
