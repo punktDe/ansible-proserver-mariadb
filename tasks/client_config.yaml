@@ -12,8 +12,7 @@
   ansible.builtin.copy:
     dest: /usr/local/etc/mysql-password
     content: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
-    owner: "{{ mariadb.system.user.root.name }}"
-    group: "{{ mariadb.system.user.root.group }}"
+    owner: "root"
     mode: '0600'
 
 - name: Set up mysql root password
@@ -57,8 +56,8 @@
     label: "{{ item.path }}"
   with_items:
     - path: /root/.my.cnf
-      owner: "{{ mariadb.system.user.root.name }}"
-      group: "{{ mariadb.system.user.root.group }}"
+      owner: "root"
+      group: "{{ 'root' if ansible_os_family == 'Debian' else 'wheel' }}"
     - path: "{{ ansible_user_dir }}/.my.cnf"
       owner: "{{ ansible_user_uid }}"
       group: "{{ ansible_user_gid }}"

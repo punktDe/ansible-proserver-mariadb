@@ -32,7 +32,6 @@
         value: "{{ item.value }}"
         state: "{{ 'present' if item.value is not none else 'absent' }}"
         owner: root
-        group: "{{ root_group }}"
         mode: "0644"
       loop_control:
         label: "{{ config_filepath }} {{ item.section }}.{{ item.option }}={{ item.value }}"

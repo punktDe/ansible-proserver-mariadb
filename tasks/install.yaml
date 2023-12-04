@@ -23,7 +23,6 @@
           {{ mariadb.repository.apt.repository }}
         dest: "{{ item }}"
         owner: root
-        group: "{{ root_group }}"
         mode: "0644"
       register: mariadb_add_apt_repository
 
@@ -45,7 +44,6 @@
         create: yes
         section: Unit
         owner: root
-        group: "{{ root_group }}"
         mode: "0644"
         option: RequiresMountsFor
         value: /var/lib/mysql

@@ -2,16 +2,6 @@
 apt_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
 
 mariadb:
-  system:
-    user:
-      root:
-        name: root
-        group: >-
-          {%- if ansible_system == 'Linux' -%}
-            root
-          {%- else -%}
-            wheel
-          {%- endif -%}
   prefix:
     config: >-
       {%- if ansible_system == 'Linux' -%}

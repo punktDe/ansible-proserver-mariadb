@@ -21,7 +21,6 @@
       ansible.builtin.template:
         src: "backup/{{ item | basename }}"
         owner: root
-        group: "{{ root_group }}"
         mode: "0644"
         dest: "{{ item }}"
 
