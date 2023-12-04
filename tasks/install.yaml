@@ -1,7 +1,7 @@
 ---
-- name: Set up MariaDB repository (Ubuntu)
+- name: Set up MariaDB repository (Debian/Ubuntu)
   when:
-    - ansible_distribution == 'Ubuntu'
+    - ansible_os_family == 'Debian'
     - mariadb.repository.apt.repository
   block:
     - name: Install GPG
@@ -32,9 +32,9 @@
         update_cache: yes
       when: mariadb_add_apt_repository.changed
 
-- name: Install MariaDB (Ubuntu)
+- name: Install MariaDB (Debian/Ubuntu)
   when:
-    - ansible_distribution == 'Ubuntu'
+    - ansible_os_family == 'Debian'
     - not mariadb.galera.arbitrator
   block:
     - name: Ensure data dir is mounted before MariaDB is started
@@ -56,19 +56,12 @@
           - mariadb-server
           - python3-pymysql
 
-- name: Install garb (Ubuntu)
+- name: Install garb (Debian/Ubuntu)
   when:
-    - ansible_distribution == 'Ubuntu'
+    - ansible_os_family == 'Debian'
     - mariadb.galera.arbitrator
   block:
-    - name: Insatll galera-arbitrator-4 (22.04)
-      when: ansible_distribution_version is version('22.04', '>=')
+    - name: Insatll galera-arbitrator
       ansible.builtin.apt:
         name:
           - galera-arbitrator-4
-
-    - name: Insatll galera-arbitrator-3 (20.04 and older)
-      when: ansible_distribution_version is version('22.04', '<')
-      ansible.builtin.apt:
-        name:
-          - galera-arbitrator-3

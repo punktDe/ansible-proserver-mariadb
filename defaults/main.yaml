@@ -63,7 +63,7 @@ mariadb:
   repository:
     apt:
       key_url: https://mariadb.org/mariadb_release_signing_key.asc
-      repository: "deb [arch={{ apt_arch }}] http://mirror.netcologne.de/mariadb/repo/10.6/ubuntu {{ ansible_distribution_release }} main"
+      repository: "deb [arch={{ apt_arch }}] http://mirror.netcologne.de/mariadb/repo/10.6/{{ ansible_distribution | lower }} {{ ansible_distribution_release | lower }} main"
   version:
 mariadb_root_password: >-
   {%- if mariadb.galera.cluster and not mariadb.galera.initializer -%}
