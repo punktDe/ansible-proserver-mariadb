@@ -1,5 +1,6 @@
 ---
 - name: Create databases
+  ignore_errors: "{{ ansible_check_mode }}"
   community.mysql.mysql_db:
     name: "{{ db.value.name }}"
     encoding: "{{ encoding }}"
