@@ -1,6 +1,7 @@
 ---
 - name: Create users and database grants
   when: not mariadb.galera.cluster or mariadb.galera.initializer
+  ignore_errors: "{{ ansible_check_mode }}"
   community.mysql.mysql_user:
     name: "{{ username }}"
     password: "{{ password }}"
