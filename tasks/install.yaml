@@ -49,6 +49,7 @@
         value: /var/lib/mysql
 
     - name: Install MariaDB
+      ignore_errors: "{{ ansible_check_mode }}"
       ansible.builtin.apt:
         name:
           - mariadb-server
