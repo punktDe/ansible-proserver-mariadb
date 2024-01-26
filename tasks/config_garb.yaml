@@ -1,7 +1,9 @@
 ---
 - name: Confiure garb (garb.cnf)
   when: mariadb.galera.arbitrator
-  template:
+  ansible.builtin.template:
     src: garb.cnf
     dest: /etc/default/garb
+    owner: root
+    mode: "0644"
   notify: Restart garb

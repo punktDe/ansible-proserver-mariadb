@@ -1,19 +1,19 @@
 ---
 - name: Start MariaDB
-  service:
+  ansible.builtin.service:
     name: "{{ mariadb.service }}"
     state: started
   register: mysqld_service_result
 
 - name: Restart MariaDB
   throttle: 1
-  service:
+  ansible.builtin.service:
     name: "{{ mariadb.service }}"
     state: restarted
   when: not (mysqld_service_result is defined and mysqld_service_result.changed)
 
 - name: Restart garb
-  service:
+  ansible.builtin.service:
     name: garb
     state: restarted
   when: not mariadb_service_garb_start_result.changed

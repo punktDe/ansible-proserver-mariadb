@@ -1,30 +1,38 @@
 ---
 - name: Check for root password
   changed_when: false
-  stat:
+  ansible.builtin.stat:
     path: /usr/local/etc/mysql-password
   register: mariadb_mysql_password
 
 - name: Create root password
-  when: not mariadb_mysql_password.stat.exists and (not mariadb.galera.cluster or mariadb.galera.initializer)
-  copy:
+  when:
+    - not mariadb_mysql_password.stat.exists
+    - not mariadb.galera.cluster or mariadb.galera.initializer
+  ansible.builtin.copy:
     dest: /usr/local/etc/mysql-password
     content: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
-    owner: "{{ mariadb.system.user.root.name }}"
-    group: "{{ mariadb.system.user.root.group }}"
+    owner: "root"
     mode: '0600'
 
-- when: not mariadb.galera.cluster or mariadb.galera.initializer
+- name: Set up mysql root password
+  when: not mariadb.galera.cluster or mariadb.galera.initializer
   block:
     - name: Read root-password
-      slurp:
+      ansible.builtin.slurp:
         src: "{{ item }}"
       with_items:
         - /usr/local/etc/mysql-password
       register: mariadb_root_password_slurp_result
 
+    - name: Start MariaDB
+      ansible.builtin.service:
+        name: "{{ mariadb.service }}"
+        state: started
+
     - name: Set root password in database
-      mysql_user:
+      ignore_errors: "{{ ansible_check_mode }}"
+      community.mysql.mysql_user:
         login_user: root
         login_password: "{{ mariadb_root_password_slurp_result.results.0.content|b64decode|trim }}"
         check_implicit_admin: yes
@@ -34,8 +42,9 @@
         login_unix_socket: "{{ mariadb.socket if mariadb.socket else none }}"
 
 - name: Write root password to cli client configuration file
+  ignore_errors: "{{ ansible_check_mode }}"
   when: not mariadb.galera.cluster or not mariadb.galera.arbitrator
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "{{ item.path }}"
     owner: "{{ item.owner }}"
     group: "{{ item.group }}"
@@ -49,8 +58,8 @@
     label: "{{ item.path }}"
   with_items:
     - path: /root/.my.cnf
-      owner: "{{ mariadb.system.user.root.name }}"
-      group: "{{ mariadb.system.user.root.group }}"
+      owner: "root"
+      group: "{{ 'root' if ansible_os_family == 'Debian' else 'wheel' }}"
     - path: "{{ ansible_user_dir }}/.my.cnf"
       owner: "{{ ansible_user_uid }}"
       group: "{{ ansible_user_gid }}"

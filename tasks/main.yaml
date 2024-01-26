@@ -1,9 +1,24 @@
 ---
-- import_tasks: install.yaml
-- import_tasks: config_db.yaml
-- import_tasks: config_garb.yaml
-- import_tasks: galera.yaml
-- import_tasks: client_config.yaml
-- import_tasks: users.yaml
-- import_tasks: databases.yaml
-- import_tasks: backup.yaml
+- name: Install MariaDB
+  ansible.builtin.import_tasks: install.yaml
+
+- name: Configure MariaDB
+  ansible.builtin.import_tasks: config_db.yaml
+
+- name: Configure Galera Arbitrator (garb)
+  ansible.builtin.import_tasks: config_garb.yaml
+
+- name: Configure Galera Cluster
+  ansible.builtin.import_tasks: galera.yaml
+
+- name: Configure MySQL CLI client
+  ansible.builtin.import_tasks: client_config.yaml
+
+- name: Handle MariaDB users
+  ansible.builtin.import_tasks: users.yaml
+
+- name: Handle MariaDB databases
+  ansible.builtin.import_tasks: databases.yaml
+
+- name: Set up MariaDB database backups
+  ansible.builtin.import_tasks: backup.yaml

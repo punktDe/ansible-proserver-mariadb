@@ -1,43 +1,48 @@
 ---
-- when: not mariadb.galera.arbitrator
+- name: Handle MariaDB nodes
+  when: not mariadb.galera.arbitrator
   block:
-    - when: ansible_system == 'FreeBSD'
+    - name: Configure MariaDB (FreeBSD)
+      when: ansible_system == 'FreeBSD'
       block:
         - name: Get MariaDB server version
-          shell: >
-            /usr/local/libexec/mysqld --version | python3 -c 'import sys, re; print(re.search("Ver[\s\t]*([0-9]+\.[0-9]+)", sys.stdin.readline()).group(1))'
-          changed_when: false
+          ansible.builtin.shell:
+            cmd: >-
+              /usr/local/libexec/mysqld --version |
+              python3 -c
+              'import sys, re; print(re.search("Ver[\s\t]*([0-9]+\.[0-9]+)", sys.stdin.readline()).group(1))'
+          changed_when: no
           register: mariadb_get_server_version_result
 
         - name: Check if legacy config location must be used
-          set_fact:
-            mariadb_use_legacy_config_location_result: "{{ mariadb_get_server_version_result.stdout|float < 10.5 }}"
+          ansible.builtin.set_fact:
+            mariadb_use_legacy_config_location_result: "{{ mariadb_get_server_version_result.stdout | float < 10.5 }}"
 
         - name: Remove obsolete my.cnf
           when: not mariadb_use_legacy_config_location_result
-          loop:
-            - /usr/local/etc/my.cnf
-          file:
-            path: "{{ item }}"
+          ansible.builtin.file:
+            path: "/usr/local/etc/my.cnf"
             state: absent
 
     - name: Configure MariaDB (my.cnf)
-      ini_file:
+      community.general.ini_file:
         path: "{{ config_filepath }}"
         section: "{{ item.section }}"
         option: "{{ item.option }}"
         value: "{{ item.value }}"
         state: "{{ 'present' if item.value is not none else 'absent' }}"
+        owner: root
+        mode: "0644"
       loop_control:
         label: "{{ config_filepath }} {{ item.section }}.{{ item.option }}={{ item.value }}"
-      with_items: "{{ mariadb['my.cnf']|mariadb_ini_helper }}"
+      with_items: "{{ mariadb['my.cnf'] | mariadb_ini_helper }}"
       vars:
         config_filepath: "{% if ansible_system == 'FreeBSD' and mariadb_use_legacy_config_location_result %}/usr/local/etc/my.cnf{% else %}{{ mariadb.prefix.config }}/conf.d/zz-ansible.cnf{% endif %}"
       notify: Restart MariaDB
 
     - name: Ensure MariaDB config set by Ansible overrules package defaults
       when: "ansible_system == 'Linux' and mariadb['my.cnf']"
-      file:
+      ansible.builtin.file:
         dest: "{{ mariadb.prefix.config }}/mariadb.conf.d/zz-ansible.cnf"
         src: ../conf.d/zz-ansible.cnf
         state: link

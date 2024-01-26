@@ -1,60 +1,66 @@
-- when: ansible_distribution == 'Ubuntu' and mariadb.repository.apt.repository
+---
+- name: Set up MariaDB repository (Debian/Ubuntu)
+  when:
+    - ansible_os_family == 'Debian'
+    - mariadb.repository.apt.repository
   block:
     - name: Install GPG
-      apt:
-        name: gpg
+      ansible.builtin.apt:
+        update_cache: yes
+        name:
+          - gpg
+          - gpg-agent
 
     - name: Add MariaDB repository key
-      apt_key:
+      ansible.builtin.apt_key:
         url: "{{ mariadb.repository.apt.key_url }}"
 
     - name: Add MariaDB repository
       loop:
         - /etc/apt/sources.list.d/mariadb.list
-      copy:
+      ansible.builtin.copy:
         content: |
           {{ mariadb.repository.apt.repository }}
         dest: "{{ item }}"
+        owner: root
+        mode: "0644"
       register: mariadb_add_apt_repository
 
     - name: Update apt cache
-      apt:
+      ansible.builtin.apt:
         update_cache: yes
       when: mariadb_add_apt_repository.changed
 
-- when:
-    - ansible_distribution == 'Ubuntu'
+- name: Install MariaDB (Debian/Ubuntu)
+  when:
+    - ansible_os_family == 'Debian'
     - not mariadb.galera.arbitrator
   block:
     - name: Ensure data dir is mounted before MariaDB is started
       loop:
         - /etc/systemd/system/mariadb.service.d/UnitRequiresMountsFor.conf
-      ini_file:
+      community.general.ini_file:
         path: "{{ item }}"
         create: yes
         section: Unit
+        owner: root
+        mode: "0644"
         option: RequiresMountsFor
         value: /var/lib/mysql
 
     - name: Install MariaDB
-      apt:
+      ignore_errors: "{{ ansible_check_mode }}"
+      ansible.builtin.apt:
         name:
           - mariadb-server
           - python3-pymysql
 
-- name: Install garb
+- name: Install garb (Debian/Ubuntu)
   when:
-    - ansible_distribution == 'Ubuntu'
+    - ansible_os_family == 'Debian'
     - mariadb.galera.arbitrator
   block:
-    - name: Insatll galera-arbitrator-4 (22.04)
-      when: ansible_distribution_version is version('22.04', '>=')
-      apt:
+    - name: Insatll galera-arbitrator
+      ansible.builtin.apt:
         name:
           - galera-arbitrator-4
-
-    - name: Insatll galera-arbitrator-3 (20.04 and older)
-      when: ansible_distribution_version is version('22.04', '<')
-      apt:
-        name:
-          - galera-arbitrator-3
