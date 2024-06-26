@@ -6,6 +6,7 @@
       when: ansible_system == 'FreeBSD'
       block:
         - name: Get MariaDB server version
+          check_mode: no
           ansible.builtin.shell:
             cmd: >-
               /usr/local/libexec/mysqld --version |
@@ -15,7 +16,6 @@
           register: mariadb_get_server_version_result
 
         - name: Check if legacy config location must be used
-          check_mode: no
           ansible.builtin.set_fact:
             mariadb_use_legacy_config_location_result: "{{ mariadb_get_server_version_result.stdout is version('10.5', '<') }}"
 
