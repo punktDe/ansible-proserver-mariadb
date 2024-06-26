@@ -6,6 +6,7 @@
       when: ansible_system == 'FreeBSD'
       block:
         - name: Get MariaDB server version
+          check_mode: no
           ansible.builtin.shell:
             cmd: >-
               /usr/local/libexec/mysqld --version |
