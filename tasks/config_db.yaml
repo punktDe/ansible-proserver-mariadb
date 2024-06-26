@@ -16,7 +16,7 @@
 
         - name: Check if legacy config location must be used
           ansible.builtin.set_fact:
-            mariadb_use_legacy_config_location_result: "{{ mariadb_get_server_version_result.stdout | float < 10.5 }}"
+            mariadb_use_legacy_config_location_result: "{{ mariadb_get_server_version_result.stdout is version('10.5', '<') }}"
 
         - name: Remove obsolete my.cnf
           when: not mariadb_use_legacy_config_location_result
