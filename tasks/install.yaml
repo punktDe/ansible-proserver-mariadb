@@ -11,20 +11,22 @@
           - gpg
           - gpg-agent
 
-    - name: Add MariaDB repository key
-      ansible.builtin.apt_key:
-        url: "{{ mariadb.repository.apt.key_url }}"
+    - name: Remove the legacy MariaDB repository
+      ansible.builtin.file:
+        dest: /etc/apt/sources.list.d/mariadb.list
+        state: absent
 
     - name: Add MariaDB repository
-      loop:
-        - /etc/apt/sources.list.d/mariadb.list
-      ansible.builtin.copy:
-        content: |
-          {{ mariadb.repository.apt.repository }}
-        dest: "{{ item }}"
-        owner: root
-        mode: "0644"
       register: mariadb_add_apt_repository
+      ansible.builtin.deb822_repository:
+        name: "mariadb"
+        uris: "{{ mariadb.repository.apt.repository }}"
+        signed_by: "{{ mariadb.repository.apt.key_url }}"
+        types: [deb]
+        components: [main]
+        suites: '{{ ansible_distribution_release }}'
+        state: present
+        enabled: yes
 
     - name: Update apt cache
       ansible.builtin.apt:
