@@ -53,8 +53,8 @@ mariadb:
     application_event_log: /var/log/application_events/MariaDB-Backup.log
   repository:
     apt:
-      key_url: https://mariadb.org/mariadb_release_signing_key.asc
-      repository: "deb [arch={{ apt_arch }}] http://mirror.netcologne.de/mariadb/repo/{{ vars.mariadb.version }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release | lower }} main"
+      key_url: https://mirror.netcologne.de/mariadb/PublicKey_v2
+      repository: "http://mirror.netcologne.de/mariadb/repo/{{ vars.mariadb.version }}/{{ ansible_distribution | lower }}"
 mariadb_root_password: >-
   {%- if mariadb.galera.cluster and not mariadb.galera.initializer -%}
     {{- (mariadb_galera_cluster_nodes
