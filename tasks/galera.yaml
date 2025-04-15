@@ -58,6 +58,8 @@
       ansible.builtin.template:
         src: bin/galera_new_cluster
         dest: /var/opt/galera/bin/galera_new_cluster
+        owner: root
+        mode: "0755"
 
     - name: Initialize cluster
       changed_when: yes
