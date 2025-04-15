@@ -1,4 +1,4 @@
 #!/bin/sh
 echo 'mysql_args="--wsrep-new-cluster"' >> /usr/local/etc/rc.conf.d/mysql-server
 service mysql-server start
-sed -i -e '/^mysql_args/d' /usr/local/etc/rc.conf.d/mysql-server
+sed -i"" '/^mysql_args/d' /usr/local/etc/rc.conf.d/mysql-server
