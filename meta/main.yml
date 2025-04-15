@@ -1,10 +1,9 @@
 ---
-dependencies: []
-
 galaxy_info:
-  author: "Punkt.de"
+  author: "punkt.de"
   license: "MIT"
+  role_name: mariadb
   description: "MariaDB role for Proserver"
-  role_name: "proserver_mariadb"
   namespace: "punktde"
   min_ansible_version: "2.15"
+  platforms: []

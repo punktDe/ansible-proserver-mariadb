@@ -38,14 +38,33 @@
     - name: Stop MariaDB
       when: not mariadb.galera.arbitrator
       ansible.builtin.service:
-        name: mariadb
+        name: "{{ mariadb.service }}"
         state: stopped
+
+    - name: Create directory for galera scripts (FreeBSD)
+      when: ansible_system == "FreeBSD"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        mode: "0755"
+      loop:
+        - /var/opt
+        - /var/opt/galera
+        - /var/opt/galera/bin
+
+    - name: Template galera_new_cluster (FreeBSD)
+      when: ansible_system == "FreeBSD"
+      ansible.builtin.template:
+        src: bin/galera_new_cluster
+        dest: /var/opt/galera/bin/galera_new_cluster
 
     - name: Initialize cluster
       changed_when: yes
       when: mariadb.galera.initializer
       ansible.builtin.command:
-        cmd: /usr/bin/galera_new_cluster
+        cmd: >-
+          {{ "/usr/bin/galera_new_cluster" if ansible_system == "Linux" else "/var/opt/galera/bin/galera_new_cluster" }}
 
     - name: Wait until cluster is initialized
       changed_when: yes
@@ -56,7 +75,7 @@
     - name: Join cluster
       when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
       ansible.builtin.service:
-        name: mariadb
+        name: "{{ mariadb.service }}"
         state: started
 
     - name: Wait until node has joined cluster
