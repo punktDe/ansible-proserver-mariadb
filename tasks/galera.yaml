@@ -135,7 +135,7 @@
     - name: Restart initializer node to stop bootstrap and rejoin cluster
       when: mariadb.galera.initializer
       ansible.builtin.service:
-        name: mariadb
+        name: "{{ mariadb.service }}"
         state: restarted
 
     - name: Wait that node has rejoined cluster
