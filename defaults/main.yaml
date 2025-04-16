@@ -10,6 +10,12 @@ mariadb:
       {%- else -%}
         /usr/local/etc/mysql
       {%- endif -%}
+    lib: >-
+      {%- if ansible_system == 'Linux' -%}
+        /var/lib/mysql
+      {%- else -%}
+        /var/db/mysql
+      {%- endif -%}
   socket: >-
     {%- if ansible_system == 'Linux' -%}
       /run/mysqld/mysqld.sock
