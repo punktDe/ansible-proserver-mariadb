@@ -15,7 +15,7 @@
 - name: Check if MariaDB is already runnning
   ansible.builtin.stat:
     path: >-
-      {{ "/var/run/mysqld/mysqld.pid" if ansible_system == "Linux" else "/tmp/mysql.pid" }}
+      {{ "/var/run/mysqld/mysqld.pid" if ansible_system == "Linux" else "/tmp/mysqld.pid" }}
   register: mariadb_pid
   changed_when: false
 
