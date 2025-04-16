@@ -35,11 +35,13 @@
       or 'Safe to Bootstrap: 1' in mariadb_bootstrap.content | b64decode
       or not mariadb.galera.initializer and not mariadb_pid.stat.exists
   block:
-    - name: Stop MariaDB
+
+    - name: Stop and enable MariaDB
       when: not mariadb.galera.arbitrator
       ansible.builtin.service:
         name: "{{ mariadb.service }}"
         state: stopped
+        enabled: yes
 
     - name: Create directory for galera scripts (FreeBSD)
       when: ansible_system == "FreeBSD"
@@ -107,6 +109,12 @@
             regexp: "^WorkingDirectory"
             insertafter: "^ExecStart=.*"
             line: "WorkingDirectory=/var/lib/garbd"
+
+        - name: Stop and disable MariaDB
+          ansible.builtin.service:
+            name: "{{ mariadb.service }}"
+            state: stopped
+            enabled: no
 
         - name: Enable garb
           ansible.builtin.service:
