@@ -1,3 +1,3 @@
 garb_enable=YES
-garb_galera_nodes="{% for node_vars in mariadb_galera_cluster_nodes | map('extract', hostvars) %}{{ node_vars.mariadb['my.cnf'].galera.wsrep_node_address }}{% if not loop.last %},{% endif %}{% endfor %}"
-garb_galera_group="{{ mariadb['my.cnf'].galera.wsrep_cluster_name if ansible_system == 'Linux' else mariadb['my.cnf'].mysqld.wsrep_cluster_name }}"
+garb_galera_nodes="{% for node_vars in mariadb_galera_cluster_nodes | map('extract', hostvars) %}{{ node_vars.mariadb['my.cnf'].mysqld.wsrep_node_address }}{% if not loop.last %},{% endif %}{% endfor %}"
+garb_galera_group="{{ mariadb['my.cnf'].mysqld.wsrep_cluster_name }}"
