@@ -74,7 +74,7 @@
     - name: Wait until cluster is initialized
       changed_when: yes
       when: mariadb.galera.initializer
-      ansible.builtin.shell:
+      ansible.builtin.command:
         cmd: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
     - name: Join cluster
@@ -86,7 +86,7 @@
     - name: Wait until node has joined cluster
       when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
       changed_when: yes
-      ansible.builtin.shell:
+      ansible.builtin.command:
         cmd: "{{ lookup('template', 'has_joined_cluster.sh') }}"
 
     - name: Set up garb service
@@ -142,5 +142,5 @@
     - name: Wait that node has rejoined cluster
       when: mariadb.galera.initializer
       changed_when: yes
-      ansible.builtin.shell:
+      ansible.builtin.command:
         cmd: "{{ lookup('template', 'has_joined_cluster.sh') }}"
