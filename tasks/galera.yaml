@@ -64,6 +64,14 @@
         owner: root
         mode: "0755"
 
+    - name: Template has_joined_cluster (FreeBSD)
+      when: ansible_system == "FreeBSD"
+      ansible.builtin.template:
+        src: has_joined_cluster.sh
+        dest: /var/opt/galera/bin/has_joined_cluster
+        owner: root
+        mode: "0755"
+
     - name: Initialize cluster
       changed_when: yes
       when: mariadb.galera.initializer
@@ -75,7 +83,8 @@
       changed_when: yes
       when: mariadb.galera.initializer
       ansible.builtin.command:
-        cmd: "{{ lookup('template', 'has_joined_cluster.sh') }}"
+        cmd: >-
+          {{ lookup('template', 'has_joined_cluster.sh') if ansible_system == "Linux" else "/var/opt/galera/bin/has_joined_cluster" }}
 
     - name: Join cluster
       when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
@@ -83,11 +92,13 @@
         name: "{{ mariadb.service }}"
         state: started
 
+
     - name: Wait until node has joined cluster
       when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
       changed_when: yes
       ansible.builtin.command:
-        cmd: "{{ lookup('template', 'has_joined_cluster.sh') }}"
+        cmd: >-
+          {{ lookup('template', 'has_joined_cluster.sh') if ansible_system == "Linux" else "/var/opt/galera/bin/has_joined_cluster" }}
 
     - name: Set up garb service
       when: mariadb.galera.arbitrator
