@@ -1,7 +1,7 @@
 ---
 - name: Verify
   hosts: all
-  gather_facts: false
+  gather_facts: true
   tasks:
     - name: Get MariaDB version
       register: mariadb_version
@@ -9,6 +9,32 @@
       ansible.builtin.command:
         cmd: mariadb --version
 
-    - name: Display PostgreSQL version
-      ansible.builtin.debug:
-        var: mariadb_version.stdout
+    - name: Assert MariaDB client is installed
+      ansible.builtin.assert:
+        that:
+          - mariadb_version.rc == 0
+        fail_msg: "MariaDB client binary is missing"
+        success_msg: "MariaDB client binary is present"
+
+    - name: Populate service facts
+      ansible.builtin.service_facts:
+
+    - name: Assert MariaDB service is active
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['services']['mariadb.service']['state'] == "running"
+        fail_msg: "MariaDB service is not active"
+        success_msg: "MariaDB service is active"
+
+    - name: Run test query via mysql
+      register: mariadb_ping
+      changed_when: false
+      ansible.builtin.command:
+        cmd: "mysql --execute 'SELECT 1'"
+
+    - name: Assert MariaDB responds to queries
+      ansible.builtin.assert:
+        that:
+          - mariadb_ping.rc == 0
+        fail_msg: "MariaDB did not respond to the SELECT 1 probe"
+        success_msg: "MariaDB responded to the SELECT 1 probe"
