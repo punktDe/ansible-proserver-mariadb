@@ -1,106 +1,44 @@
-# [proserver-ansible-mariadb](https://github.com/punktDe/proserver-ansible-mariadb)
+<!-- BEGIN_ANSIBLE_DOCS -->
+<!--
+Do not edit README.md directly!
 
-Ansible role to configure MariaDB on a proServer.
+This file is generated automatically by aar-doc and will be overwritten.
 
-## Requirements
+Please edit meta/argument_specs.yml instead.
+-->
+# ansible-proserver-mariadb
 
-- A proServer
-- Ansible >=2.9.0
-- Ansible option `hash_behaviour` set to `merge`
+mariadb role for Proserver
 
-## Configuration
+## Supported Operating Systems
 
-**1)** Add the role to your playbook.
-You could add this repository as submodule to your Ansible project's Git repository.
+- Debian 12
+- Ubuntu 24.04, 22.04
+- FreeBSD [Proserver](https://infrastructure.punkt.de/de/produkte/proserver.html)
 
+## Role Arguments
+
+This entrypoint has no options.
+
+## Dependencies
+None.
+
+## Installation
+Add this role to the requirements.yml of your playbook as follows:
+```yaml
+roles:
+  - name: ansible-proserver-mariadb
+    src: https://github.com/punktDe/ansible-proserver-mariadb
 ```
-git submodule add https://github.com/punktDe/proserver-ansible-mariadb.git roles/mariadb
-```
+
+Afterwards, install the role by running `ansible-galaxy install -r requirements.yml`
+
+## Example Playbook
 
 ```yaml
----
-- name: mariadb
-  hosts: all
-  become: yes
+- hosts: all
   roles:
-    - mariadb
+    - name: mariadb
 ```
 
-**2)** Configure what databases you'd like to have (in host vars, group vars or wherever).
-
-```yaml
----
-mariadb:
-  databases:
-    cms:
-      name: mydb
-  users:
-    cms:
-      username: myuser
-      password: mypass
-      hosts:
-        cms: localhost
-      privileges:
-        cms_all: "mydb.*:all"
-```
-
-With these variables the role will ensure that
-
-- there is a database `mydb`
-- there is a user `myuser@localhost` with password `mypass`
-- `myuser` has all privileges on `mydb`
-
-The value `cms` and `cms_all` is never used.
-You can use it to override previously defined variables
-(e.g. override options from group vars in host vars).
-
-Let's assume the example above comes from your group vars and
-the example below comes from your host vars.
-
-```yaml
----
-mariadb:
-  users:
-    cms:
-      hosts:
-        cms: 172.17.78.2
-      privileges:
-        cms_all:
-        cms_readall: "mydb.*:select,show view"
-```
-
-The role would ensure that
-
-- there is a database `mydb`
-- there is a user `myuser@172.17.78.2` with password `mypass`
-- `myuser` has read privileges (`create` and `show view`) on `mydb`
-
-## Full example
-
-This example shows all available variables.
-
-```yaml
----
-mariadb:
-  database_defaults:
-    encoding: utf8mb4
-    collation: utf8mb4_unicode_ci
-  databases:
-    example_db:
-      encoding: utf8mb4
-      collation: utf8mb4_unicode_ci
-      name: example
-  users:
-    example_user:
-      username: example
-      password: example
-      hosts:
-        example_host: localhost
-      privileges:
-        example_privilege: "example.*:all"
-```
-
-
-## Further Documentation
-
-* [Galera Cluster](./documentation/galera.md)
+<!-- END_ANSIBLE_DOCS -->
