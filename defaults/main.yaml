@@ -2,7 +2,7 @@
 apt_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
 
 mariadb:
-  version: 10.6
+  version: 11.8
   prefix:
     config: >-
       {%- if ansible_system == 'Linux' -%}
@@ -53,7 +53,7 @@ mariadb:
     application_event_log: /var/log/application_events/MariaDB-Backup.log
   repository:
     apt:
-      key_url: https://mirror.netcologne.de/mariadb/PublicKey_v2
+      key_url: https://mirror.netcologne.de/mariadb/PublicKey
       repository: "http://mirror.netcologne.de/mariadb/repo/{{ vars.mariadb.version }}/{{ ansible_distribution | lower }}"
 mariadb_root_password: >-
   {%- if mariadb.galera.cluster and not mariadb.galera.initializer -%}
