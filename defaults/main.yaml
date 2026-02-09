@@ -1,23 +1,23 @@
 ---
-apt_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+apt_arch: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"
 
 mariadb:
   version: 11.8
   prefix:
     config: >-
-      {%- if ansible_system == 'Linux' -%}
+      {%- if ansible_facts['system'] == 'Linux' -%}
         /etc/mysql
       {%- else -%}
         /usr/local/etc/mysql
       {%- endif -%}
   socket: >-
-    {%- if ansible_system == 'Linux' -%}
+    {%- if ansible_facts['system'] == 'Linux' -%}
       /run/mysqld/mysqld.sock
     {%- else -%}
       /tmp/mysql.sock
     {%- endif -%}
   service: >-
-    {%- if ansible_system == 'Linux' -%}
+    {%- if ansible_facts['system'] == 'Linux' -%}
       mysql
     {%- else -%}
       mysql-server
@@ -41,7 +41,7 @@ mariadb:
       OnCalendar=*-*-* 00:00:00
       RandomizedDelaySec=6h
     mysqldump:
-      '0': mysqldump
+      "0": mysqldump
       50_single_transaction: --single-transaction
     structure_only: {}
     compression:
@@ -54,7 +54,7 @@ mariadb:
   repository:
     apt:
       key_url: https://mirror.netcologne.de/mariadb/PublicKey
-      repository: "http://mirror.netcologne.de/mariadb/repo/{{ vars.mariadb.version }}/{{ ansible_distribution | lower }}"
+      repository: "http://mirror.netcologne.de/mariadb/repo/{{ mariadb.version }}/{{ ansible_facts['distribution'] | lower }}"
 mariadb_root_password: >-
   {%- if mariadb.galera.cluster and not mariadb.galera.initializer -%}
     {{- (mariadb_galera_cluster_nodes
@@ -62,9 +62,9 @@ mariadb_root_password: >-
                 | selectattr('mariadb.galera.initializer', 'defined')
                 | selectattr('mariadb.galera.initializer', 'true')
                 | first)
-               .mariadb_root_password_slurp_result.results.0.content|b64decode|trim -}}
+               .mariadb_root_password_slurp_result.content|b64decode|trim -}}
   {%- else -%}
-    {{- mariadb_root_password_slurp_result.results.0.content|b64decode|trim -}}
+    {{- mariadb_root_password_slurp_result.content|b64decode|trim -}}
   {%- endif -%}
 mariadb_galera_cluster_nodes: >-
   {%- set cluster_nodes = [] -%}

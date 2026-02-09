@@ -9,10 +9,10 @@ argument_specs:
     options:
       apt_arch:
         type: str
-        default: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+        default: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"
         description:
           - Package architecture suffix used when configuring upstream repositories.
-          - Autodetected from `ansible_architecture`; override only for non-standard naming schemes.
+          - Autodetected from `ansible_facts['architecture']`; override only for non-standard naming schemes.
       mariadb:
         type: dict
         required: true
@@ -35,20 +35,20 @@ argument_specs:
               config:
                 type: str
                 default: >-
-                  {% if ansible_system == 'Linux' %}/etc/mysql{% else %}/usr/local/etc/mysql{% endif %}
+                  {% if ansible_facts['system'] == 'Linux' %}/etc/mysql{% else %}/usr/local/etc/mysql{% endif %}
                 description:
                   - Parent directory that will contain `conf.d`/`mariadb.conf.d`.
                   - Change this only when using custom filesystem layouts.
           socket:
             type: str
             default: >-
-              {% if ansible_system == 'Linux' %}/run/mysqld/mysqld.sock{% else %}/tmp/mysql.sock{% endif %}
+              {% if ansible_facts['system'] == 'Linux' %}/run/mysqld/mysqld.sock{% else %}/tmp/mysql.sock{% endif %}
             description:
               - Path to the MariaDB UNIX socket used by `mysql` CLI modules and health checks.
           service:
             type: str
             default: >-
-              {% if ansible_system == 'Linux' %}mysql{% else %}mysql-server{% endif %}
+              {% if ansible_facts['system'] == 'Linux' %}mysql{% else %}mysql-server{% endif %}
             description:
               - Systemd/rc service name that is controlled by the role.
           repository:
@@ -69,7 +69,7 @@ argument_specs:
                       - URL of the GPG key used to sign the MariaDB packages.
                   repository:
                     type: str
-                    default: "http://mirror.netcologne.de/mariadb/repo/{{ vars.mariadb.version }}/{{ ansible_distribution | lower }}"
+                    default: "http://mirror.netcologne.de/mariadb/repo/{{ mariadb.version }}/{{ ansible_facts['distribution'] | lower }}"
                     description:
                       - deb822 repository URL that will be added through `ansible.builtin.deb822_repository`.
                       - You can point this to an internal mirror if required.
@@ -173,7 +173,7 @@ argument_specs:
               mysqldump:
                 type: dict
                 default:
-                  '0': mysqldump
+                  "0": mysqldump
                   50_single_transaction: --single-transaction
                 description:
                   - Ordered dictionary of command-line fragments used to build the mysqldump command.

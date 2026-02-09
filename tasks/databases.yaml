@@ -34,7 +34,7 @@
         db: "{{ item.db }}"
       loop_control:
         label: "{{ tmpfile }}"
-      with_items: "{{ mariadb_createdb_result.results }}"
+      loop: "{{ mariadb_createdb_result.results }}"
 
     - name: Restore databases
       community.mysql.mysql_db:
@@ -48,4 +48,4 @@
         db: "{{ item.db }}"
       loop_control:
         label: "{{ db.value.name }} file={{ tmpfile }}"
-      with_items: "{{ mariadb_createdb_result.results }}"
+      loop: "{{ mariadb_createdb_result.results }}"

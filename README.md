@@ -32,8 +32,8 @@ Handles database creation, user management and optional automated backups.
 |---|---|---|---|---|
 | `version` | MariaDB major.minor version to install. Used to build repository URLs and to pick compatible packages. | str | no | 11.8 |
 | `prefix` | Base directories for MariaDB configuration files. | dict of 'prefix' options | no | {} |
-| `socket` | Path to the MariaDB UNIX socket used by `mysql` CLI modules and health checks. | str | no | {% if ansible_system == 'Linux' %}/run/mysqld/mysqld.sock{% else %}/tmp/mysql.sock{% endif %} |
-| `service` | Systemd/rc service name that is controlled by the role. | str | no | {% if ansible_system == 'Linux' %}mysql{% else %}mysql-server{% endif %} |
+| `socket` | Path to the MariaDB UNIX socket used by `mysql` CLI modules and health checks. | str | no | {% if ansible_facts['system'] == 'Linux' %}/run/mysqld/mysqld.sock{% else %}/tmp/mysql.sock{% endif %} |
+| `service` | Systemd/rc service name that is controlled by the role. | str | no | {% if ansible_facts['system'] == 'Linux' %}mysql{% else %}mysql-server{% endif %} |
 | `repository` | Optional vendor repository configuration (currently only APT is supported). | dict of 'repository' options | no |  |
 | `my.cnf` | Declarative representation of the contents that should end up in `zz-ansible.cnf`. Keys correspond to section names (`mysqld`, `mysqld_safe`, `galera`, ...); nested keys represent option/value pairs. Values set to `null` remove the option from the rendered file. | dict | no |  |
 | `database_defaults` | Fallback charset/collation used when a database entry omits explicit values. | dict of 'database_defaults' options | no | {'encoding': 'utf8mb4', 'collation': 'utf8mb4_unicode_ci'} |
@@ -46,7 +46,7 @@ Handles database creation, user management and optional automated backups.
 
 |Option|Description|Type|Required|Default|
 |---|---|---|---|---|
-| `config` | Parent directory that will contain `conf.d`/`mariadb.conf.d`. Change this only when using custom filesystem layouts. | str | no | {% if ansible_system == 'Linux' %}/etc/mysql{% else %}/usr/local/etc/mysql{% endif %} |
+| `config` | Parent directory that will contain `conf.d`/`mariadb.conf.d`. Change this only when using custom filesystem layouts. | str | no | {% if ansible_facts['system'] == 'Linux' %}/etc/mysql{% else %}/usr/local/etc/mysql{% endif %} |
 
 #### Options for `mariadb.repository`
 
@@ -59,7 +59,7 @@ Handles database creation, user management and optional automated backups.
 |Option|Description|Type|Required|Default|
 |---|---|---|---|---|
 | `key_url` | URL of the GPG key used to sign the MariaDB packages. | str | no | https://mirror.netcologne.de/mariadb/PublicKey |
-| `repository` | deb822 repository URL that will be added through `ansible.builtin.deb822_repository`. You can point this to an internal mirror if required. | str | no | http://mirror.netcologne.de/mariadb/repo/{{ vars.mariadb.version }}/{{ ansible_distribution | lower }} |
+| `repository` | deb822 repository URL that will be added through `ansible.builtin.deb822_repository`. You can point this to an internal mirror if required. | str | no | http://mirror.netcologne.de/mariadb/repo/{{ mariadb.version }}/{{ ansible_facts['distribution'] | lower }} |
 
 #### Options for `mariadb.database_defaults`
 

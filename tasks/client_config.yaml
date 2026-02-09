@@ -13,16 +13,14 @@
     dest: /usr/local/etc/mysql-password
     content: "{{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}"
     owner: "root"
-    mode: '0600'
+    mode: "0600"
 
 - name: Set up mysql root password
   when: not mariadb.galera.cluster or mariadb.galera.initializer
   block:
     - name: Read root-password
       ansible.builtin.slurp:
-        src: "{{ item }}"
-      with_items:
-        - /usr/local/etc/mysql-password
+        src: /usr/local/etc/mysql-password
       register: mariadb_root_password_slurp_result
 
     - name: Start MariaDB
@@ -34,10 +32,10 @@
       ignore_errors: "{{ ansible_check_mode }}"
       community.mysql.mysql_user:
         login_user: root
-        login_password: "{{ mariadb_root_password_slurp_result.results.0.content|b64decode|trim }}"
+        login_password: "{{ mariadb_root_password_slurp_result.content | b64decode | trim }}"
         check_implicit_admin: yes
         name: root
-        password: "{{ mariadb_root_password_slurp_result.results.0.content|b64decode|trim }}"
+        password: "{{ mariadb_root_password_slurp_result.content | b64decode | trim }}"
         host: localhost
         login_unix_socket: "{{ mariadb.socket if mariadb.socket else none }}"
 
@@ -56,10 +54,10 @@
     marker: "# {mark} ANSIBLE MANAGED BLOCK: MariaDB root password"
   loop_control:
     label: "{{ item.path }}"
-  with_items:
+  loop:
     - path: /root/.my.cnf
       owner: "root"
-      group: "{{ 'root' if ansible_os_family == 'Debian' else 'wheel' }}"
-    - path: "{{ ansible_user_dir }}/.my.cnf"
-      owner: "{{ ansible_user_uid }}"
-      group: "{{ ansible_user_gid }}"
+      group: "{{ 'root' if ansible_facts['system'] == 'Linux' else 'wheel' }}"
+    - path: "{{ ansible_facts['user_dir'] }}/.my.cnf"
+      owner: "{{ ansible_facts['user_uid'] }}"
+      group: "{{ ansible_facts['user_gid'] }}"
