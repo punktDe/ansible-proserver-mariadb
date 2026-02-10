@@ -11,5 +11,9 @@ warn_list:
   - risky-shell-pipe
   - unnamed-task
 
+enable_list:
+  - jinja[spacing]
+  - jinja[invalid]
+
 exclude_paths:
   - .ansible/

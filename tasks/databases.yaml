@@ -28,13 +28,13 @@
         dest: "{{ tmpfile }}"
         mode: 0600
       when:
-        - item.changed and db.value.import_file|default(none)
+        - item.changed and db.value.import_file | default(none)
         - not mariadb.galera.cluster or mariadb.galera.initializer
       vars:
         db: "{{ item.db }}"
       loop_control:
         label: "{{ tmpfile }}"
-      with_items: "{{ mariadb_createdb_result.results }}"
+      loop: "{{ mariadb_createdb_result.results }}"
 
     - name: Restore databases
       community.mysql.mysql_db:
@@ -42,10 +42,10 @@
         target: "{{ tmpfile }}"
         name: "{{ db.value.name }}"
       when:
-        - item.changed and db.value.import_file|default(none)
+        - item.changed and db.value.import_file | default(none)
         - not mariadb.galera.cluster or mariadb.galera.initializer
       vars:
         db: "{{ item.db }}"
       loop_control:
         label: "{{ db.value.name }} file={{ tmpfile }}"
-      with_items: "{{ mariadb_createdb_result.results }}"
+      loop: "{{ mariadb_createdb_result.results }}"

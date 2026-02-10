@@ -1,8 +1,8 @@
 ---
 - name: Set up MariaDB repository (Debian/Ubuntu)
   when:
-    - ansible_os_family == 'Debian'
-    - mariadb.repository.apt.repository
+    - ansible_facts['os_family'] == 'Debian'
+    - mariadb.repository.apt.repository is defined and mariadb.repository.apt.repository != None
   block:
     - name: Install requirements for MariaDB
       ansible.builtin.apt:
@@ -25,7 +25,7 @@
         signed_by: "{{ mariadb.repository.apt.key_url }}"
         types: [deb]
         components: [main]
-        suites: '{{ ansible_distribution_release }}'
+        suites: "{{ ansible_facts['distribution_release'] }}"
         state: present
         enabled: yes
 
@@ -36,7 +36,7 @@
 
 - name: Install MariaDB (Debian/Ubuntu)
   when:
-    - ansible_os_family == 'Debian'
+    - ansible_facts['os_family'] == 'Debian'
     - not mariadb.galera.arbitrator
   block:
     - name: Ensure data dir is mounted before MariaDB is started
@@ -60,7 +60,7 @@
 
 - name: Install garb (Debian/Ubuntu)
   when:
-    - ansible_os_family == 'Debian'
+    - ansible_facts['os_family'] == 'Debian'
     - mariadb.galera.arbitrator
   block:
     - name: Insatll galera-arbitrator

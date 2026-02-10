@@ -69,7 +69,7 @@
       when: mariadb.galera.arbitrator
       block:
         - name: Create garb working directory
-          when: ansible_system == 'Linux'
+          when: ansible_facts['system'] == 'Linux'
           ansible.builtin.file:
             path: /var/lib/garbd
             owner: nobody
@@ -78,7 +78,7 @@
             state: directory
 
         - name: Add working directory parameter to systemd service (Linux)
-          when: ansible_system == 'Linux'
+          when: ansible_facts['system'] == 'Linux'
           register: workingdirectory
           ansible.builtin.lineinfile:
             state: present
@@ -93,7 +93,7 @@
             enabled: yes
 
         - name: Systemd daemon-reload
-          when: ansible_system == 'Linux' and workingdirectory.changed
+          when: ansible_facts['system'] == 'Linux' and workingdirectory.changed
           ansible.builtin.systemd:
             daemon_reload: yes
 
