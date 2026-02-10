@@ -62,9 +62,9 @@ mariadb_root_password: >-
                 | selectattr('mariadb.galera.initializer', 'defined')
                 | selectattr('mariadb.galera.initializer', 'true')
                 | first)
-               .mariadb_root_password_slurp_result.content|b64decode|trim -}}
+               .mariadb_root_password_slurp_result.content | b64decode | trim -}}
   {%- else -%}
-    {{- mariadb_root_password_slurp_result.content|b64decode|trim -}}
+    {{- mariadb_root_password_slurp_result.content | b64decode | trim -}}
   {%- endif -%}
 mariadb_galera_cluster_nodes: >-
   {%- set cluster_nodes = [] -%}

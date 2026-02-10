@@ -1,2 +1,2 @@
-GALERA_NODES="{% for node_vars in mariadb_galera_cluster_nodes|map('extract', hostvars) %}{{ node_vars.mariadb['my.cnf'].galera.wsrep_node_address }}{% if not loop.last %},{% endif %}{% endfor %}"
+GALERA_NODES="{% for node_vars in mariadb_galera_cluster_nodes | map('extract', hostvars) %}{{ node_vars.mariadb['my.cnf'].galera.wsrep_node_address }}{% if not loop.last %},{% endif %}{% endfor %}"
 GALERA_GROUP="{{ mariadb['my.cnf'].galera.wsrep_cluster_name }}"
