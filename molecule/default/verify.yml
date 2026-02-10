@@ -38,3 +38,62 @@
           - mariadb_ping.rc == 0
         fail_msg: "MariaDB did not respond to the SELECT 1 probe"
         success_msg: "MariaDB responded to the SELECT 1 probe"
+
+    - name: Check that molecule database exists
+      register: mariadb_molecule_db
+      changed_when: false
+      ansible.builtin.command:
+        argv:
+          - mysql
+          - --execute
+          - "SHOW DATABASES LIKE 'molecule';"
+
+    - name: Assert molecule database exists
+      ansible.builtin.assert:
+        that:
+          - "'molecule' in mariadb_molecule_db.stdout"
+        fail_msg: "Database 'molecule' does not exist"
+        success_msg: "Database 'molecule' exists"
+
+    - name: Test login as molecule user
+      register: mariadb_molecule_login
+      changed_when: false
+      ansible.builtin.command:
+        argv:
+          - mysql
+          - -u
+          - molecule
+          - -psupersecretpassword
+          - -D
+          - molecule
+          - --execute
+          - SELECT 1
+
+    - name: Assert molecule user can log in
+      ansible.builtin.assert:
+        that:
+          - mariadb_molecule_login.rc == 0
+        fail_msg: "User 'molecule' could not log in to database 'molecule'"
+        success_msg: "User 'molecule' can log in to database 'molecule'"
+
+    - name: Test write and read as molecule user
+      register: mariadb_molecule_write_read
+      changed_when: false
+      ansible.builtin.command:
+        argv:
+          - mysql
+          - -u
+          - molecule
+          - -psupersecretpassword
+          - -D
+          - molecule
+          - --execute
+          - "CREATE TABLE IF NOT EXISTS molecule_verify (id INT PRIMARY KEY AUTO_INCREMENT, value VARCHAR(50)); INSERT INTO molecule_verify (value) VALUES ('hello'); SELECT value FROM molecule_verify ORDER BY id DESC LIMIT 1;"
+
+    - name: Assert molecule user can write to and read from database
+      ansible.builtin.assert:
+        that:
+          - mariadb_molecule_write_read.rc == 0
+          - "'hello' in mariadb_molecule_write_read.stdout"
+        fail_msg: "User 'molecule' could not write to and read from database 'molecule'"
+        success_msg: "User 'molecule' can write to and read from database 'molecule'"
