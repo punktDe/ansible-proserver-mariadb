@@ -4,9 +4,21 @@
   environment:
     GITHUB_ACTIONS: "maybe"
     ANSIBLE_HASH_BEHAVIOUR: merge
-
-- name: Converge
-  hosts: all
+  vars:
+    mariadb:
+      databases:
+        molecule:
+          name: molecule
+      users:
+        molecule:
+          username: molecule
+          password: supersecretpassword
+          privileges:
+            molecule: molecule.*:all
+          hosts:
+            molecule:
+              - 127.0.0.1
+              - localhost
   tasks:
     - name: "Include ansible-proserver-mariadb"
       ansible.builtin.include_role:

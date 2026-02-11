@@ -5,10 +5,15 @@ skip_list:
   - name[template]
 
 warn_list:
+  - command-instead-of-shell
   - no-handler
   - package-latest
   - risky-shell-pipe
   - unnamed-task
+
+enable_list:
+  - jinja[spacing]
+  - jinja[invalid]
 
 exclude_paths:
   - .ansible/

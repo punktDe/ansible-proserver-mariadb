@@ -1,0 +1,221 @@
+---
+argument_specs:
+  main:
+    short_description: Main entry point for the MariaDB role
+    description:
+      - Installs and configures MariaDB on Debian/Ubuntu and FreeBSD based systems.
+      - Supports single-node deployments as well as Galera clusters (including garbd arbitrator nodes).
+      - Handles database creation, user management and optional automated backups.
+    options:
+      apt_arch:
+        type: str
+        default: "{{ 'arm64' if ansible_facts['architecture'] == 'aarch64' else 'amd64' }}"
+        description:
+          - Package architecture suffix used when configuring upstream repositories.
+          - Autodetected from `ansible_facts['architecture']`; override only for non-standard naming schemes.
+      mariadb:
+        type: dict
+        required: true
+        description:
+          - Master configuration dictionary used by all tasks in the role.
+          - Unless stated otherwise, every sub-option is available on all supported platforms.
+        options:
+          version:
+            type: str
+            default: "11.8"
+            description:
+              - MariaDB major.minor version to install.
+              - Used to build repository URLs and to pick compatible packages.
+          prefix:
+            type: dict
+            description:
+              - Base directories for MariaDB configuration files.
+            default: {}
+            options:
+              config:
+                type: str
+                default: >-
+                  {% if ansible_facts['system'] == 'Linux' %}/etc/mysql{% else %}/usr/local/etc/mysql{% endif %}
+                description:
+                  - Parent directory that will contain `conf.d`/`mariadb.conf.d`.
+                  - Change this only when using custom filesystem layouts.
+          socket:
+            type: str
+            default: >-
+              {% if ansible_facts['system'] == 'Linux' %}/run/mysqld/mysqld.sock{% else %}/tmp/mysql.sock{% endif %}
+            description:
+              - Path to the MariaDB UNIX socket used by `mysql` CLI modules and health checks.
+          service:
+            type: str
+            default: >-
+              {% if ansible_facts['system'] == 'Linux' %}mysql{% else %}mysql-server{% endif %}
+            description:
+              - Systemd/rc service name that is controlled by the role.
+          repository:
+            type: dict
+            description:
+              - Optional vendor repository configuration (currently only APT is supported).
+            options:
+              apt:
+                type: dict
+                description:
+                  - Repository definition that will be managed on Debian/Ubuntu hosts.
+                default: {}
+                options:
+                  key_url:
+                    type: str
+                    default: https://mirror.netcologne.de/mariadb/PublicKey
+                    description:
+                      - URL of the GPG key used to sign the MariaDB packages.
+                  repository:
+                    type: str
+                    default: "http://mirror.netcologne.de/mariadb/repo/{{ mariadb.version }}/{{ ansible_facts['distribution'] | lower }}"
+                    description:
+                      - deb822 repository URL that will be added through `ansible.builtin.deb822_repository`.
+                      - You can point this to an internal mirror if required.
+          my.cnf:
+            type: dict
+            default: {}
+            description:
+              - Declarative representation of the contents that should end up in `zz-ansible.cnf`.
+              - Keys correspond to section names (`mysqld`, `mysqld_safe`, `galera`, ...); nested keys represent option/value pairs.
+              - Values set to `null` remove the option from the rendered file.
+          database_defaults:
+            type: dict
+            description:
+              - Fallback charset/collation used when a database entry omits explicit values.
+            default:
+              encoding: utf8mb4
+              collation: utf8mb4_unicode_ci
+            options:
+              encoding:
+                type: str
+                default: utf8mb4
+                description:
+                  - Default character set handed to `community.mysql.mysql_db`.
+              collation:
+                type: str
+                default: utf8mb4_unicode_ci
+                description:
+                  - Default collation for new databases.
+          databases:
+            type: dict
+            default: {}
+            description:
+              - Declarative list of databases to create; keys are arbitrary identifiers.
+              - Each entry must set `name` and can optionally define `encoding`, `collation`, `import_file`,
+                or a nested `backup` dict with the same shape as `mariadb.backup` for per-database overrides.
+              - When `import_file` is present, the local file is uploaded and restored immediately after creation.
+          users:
+            type: dict
+            default: {}
+            description:
+              - Database users and grants to configure; keys are arbitrary user identifiers.
+              - Each entry expects `password`, a `hosts` mapping (values can be strings or lists) and a `privileges` dict
+                whose values follow the `<db>.<table>:priv1,priv2` syntax consumed by `community.mysql.mysql_user`.
+              - The role will iterate over every host in `hosts` and apply the merged privilege strings.
+          galera:
+            type: dict
+            description:
+              - Settings that control Galera behaviour.
+            default: {}
+            options:
+              cluster:
+                type: bool
+                default: false
+                description:
+                  - Enable Galera cluster orchestration.
+              initializer:
+                type: bool
+                default: false
+                description:
+                  - Flag the current node as the bootstrap/seed node.
+              arbitrator:
+                type: bool
+                default: false
+                description:
+                  - Configure the host as a garbd arbitrator instead of a full data node.
+              join:
+                type: dict
+                description:
+                  - Tuning knobs for cluster join/health checks (used by `has_joined_cluster.sh`).
+                default: {}
+                options:
+                  max_wait:
+                    type: int
+                    default: 300
+                    description:
+                      - Total time in seconds to wait for a node to become ready.
+                  check_pause:
+                    type: int
+                    default: 1
+                    description:
+                      - Sleep interval (seconds) between readiness checks.
+          backup:
+            type: dict
+            description:
+              - Controls whether automated dumps are made and when they run.
+            default: {}
+            options:
+              enabled:
+                type: bool
+                default: false
+                description:
+                  - Enables the backup script/timer globally.
+                  - Databases can override this flag individually via `mariadb.databases.<name>.backup.enabled`.
+              timer:
+                type: str
+                default: |-
+                  OnCalendar=*-*-* 00:00:00
+                  RandomizedDelaySec=6h
+                description:
+                  - Raw content injected into the `[Timer]` section of `mariadb-backup.timer`.
+              mysqldump:
+                type: dict
+                default:
+                  "0": mysqldump
+                  50_single_transaction: --single-transaction
+                description:
+                  - Ordered dictionary of command-line fragments used to build the mysqldump command.
+                  - Keys are only used for sorting; values are literal CLI arguments.
+              structure_only:
+                type: dict
+                default: {}
+                description:
+                  - Mapping of table names to booleans; tables set to `true` are exported using `--no-data`.
+              compression:
+                type: dict
+                default: {}
+                description:
+                  - Controls compression of dump files.
+                options:
+                  enabled:
+                    type: bool
+                    default: true
+                    description:
+                      - Whether to pipe mysqldump output through the compression command.
+                  command:
+                    type: str
+                    default: gzip
+                    description:
+                      - Binary executed when `compression.enabled` is true.
+                  extension:
+                    type: str
+                    default: gz
+                    description:
+                      - File suffix appended to compressed dumps.
+              dest:
+                type: str
+                default: /var/mariadb-backups
+                description:
+                  - Directory on the target host where dump files are written (permanent location).
+              send_application_event:
+                type: bool
+                default: false
+                description:
+                  - Enables writing structured metrics into `application_event_log` after each backup run.
+              application_event_log:
+                type: str
+                default: /var/log/application_events/MariaDB-Backup.log
+                description:
+                  - Path to the log file that captures backup metrics when `send_application_event` is enabled.

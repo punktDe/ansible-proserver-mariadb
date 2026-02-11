@@ -5,9 +5,9 @@
     name: "{{ db.value.name }}"
     encoding: "{{ encoding }}"
     collation: "{{ collation }}"
-    login_unix_socket: "{{ mariadb.socket if mariadb.socket else none }}"
+    login_unix_socket: "{{ mariadb.socket }}"
   when:
-    - db.value
+    - db.value is defined and db.value != None
     - not mariadb.galera.cluster or mariadb.galera.initializer
   vars:
     encoding: "{{ db.value.encoding | default(mariadb.database_defaults.encoding, true) }}"
@@ -28,13 +28,13 @@
         dest: "{{ tmpfile }}"
         mode: 0600
       when:
-        - item.changed and db.value.import_file|default(none)
+        - item.changed and (db.value.import_file | default(false))
         - not mariadb.galera.cluster or mariadb.galera.initializer
       vars:
         db: "{{ item.db }}"
       loop_control:
         label: "{{ tmpfile }}"
-      with_items: "{{ mariadb_createdb_result.results }}"
+      loop: "{{ mariadb_createdb_result.results }}"
 
     - name: Restore databases
       community.mysql.mysql_db:
@@ -42,10 +42,10 @@
         target: "{{ tmpfile }}"
         name: "{{ db.value.name }}"
       when:
-        - item.changed and db.value.import_file|default(none)
+        - item.changed and db.value.import_file | default(false)
         - not mariadb.galera.cluster or mariadb.galera.initializer
       vars:
         db: "{{ item.db }}"
       loop_control:
         label: "{{ db.value.name }} file={{ tmpfile }}"
-      with_items: "{{ mariadb_createdb_result.results }}"
+      loop: "{{ mariadb_createdb_result.results }}"

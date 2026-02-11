@@ -28,42 +28,42 @@ application_event_close() {
     rm -- "$application_event_log_tmp"
 }
 
-application_event_log={{ mariadb.backup.application_event_log|quote }}
+application_event_log={{ mariadb.backup.application_event_log | quote }}
 application_event_log_tmp="$(mktemp)"
 application_event_open
 {% endif %}
 
 rc=0
-{% for database in mariadb.databases|dict2items|sort(attribute='key')|map(attribute='value')|reject('none') %}
-{% set database_backup_enabled = database.backup.enabled|default(mariadb.backup.enabled) %}
+{% for database in mariadb.databases | dict2items | sort(attribute='key') | map(attribute='value') | reject('none') %}
+{% set database_backup_enabled = database.backup.enabled | default(mariadb.backup.enabled) %}
 {% if database_backup_enabled %}
-{% set database_backup_dest = database.backup.dest|default(mariadb.backup.dest) %}
+{% set database_backup_dest = database.backup.dest | default(mariadb.backup.dest) %}
 {% set database_backup_mysqldump = mariadb.backup.mysqldump.copy() %}
-{% set _ = database_backup_mysqldump.update(database.backup.mysqldump|default({})) %}
+{% set _ = database_backup_mysqldump.update(database.backup.mysqldump | default({})) %}
 {% set database_backup_structure_only = mariadb.backup.structure_only.copy() %}
-{% set _ = database_backup_structure_only.update(database.backup.structure_only|default({})) %}
-{% set database_backup_structure_only = database_backup_structure_only|dict2items|selectattr('value', 'eq', true)|map(attribute='key') %}
+{% set _ = database_backup_structure_only.update(database.backup.structure_only | default({})) %}
+{% set database_backup_structure_only = database_backup_structure_only | dict2items | selectattr('value', 'eq', true) | map(attribute='key') %}
 {% set database_backup_compression = mariadb.backup.compression.copy() %}
-{% set _ = database_backup_compression.update(database.backup.compression|default({})) %}
+{% set _ = database_backup_compression.update(database.backup.compression | default({})) %}
 {% set database_backup_file = database_backup_dest + '/' + database.name + '.sql' + (('.' + database_backup_compression.extension) if database_backup_compression.enabled else '') %}
 mkdir -p -- {{ database_backup_dest }}
-(umask 0077 && touch {{ database_backup_file|quote }}.tmp)
+(umask 0077 && touch {{ database_backup_file | quote }}.tmp)
 {% if mariadb.backup.send_application_event %}
 database_backup_start_time=$SECONDS
 {% endif %}
-if ({{ database_backup_mysqldump|dict2items|sort(attribute='key')|map(attribute='value')|reject('none')|map('quote')|join(' ') }} --no-data -- {{ database.name|quote }} && {{ database_backup_mysqldump|dict2items|sort(attribute='key')|map(attribute='value')|reject('none')|map('quote')|join(' ') }} --no-create-info{% for table in database_backup_structure_only %} --ignore-table={{ database.name|quote }}.{{ table|quote }}{% endfor %} -- {{ database.name|quote }}) {% if database_backup_compression.enabled %}| {{ database_backup_compression.command }} {% endif %}> {{ database_backup_file|quote }}.tmp; then
-    mv -- {{ database_backup_file|quote }}.tmp {{ database_backup_file|quote }}
+if ({{ database_backup_mysqldump | dict2items | sort(attribute='key') | map(attribute='value') | reject('none') | map('quote') | join(' ') }} --no-data -- {{ database.name | quote }} && {{ database_backup_mysqldump | dict2items | sort(attribute='key') | map(attribute='value') | reject('none') | map('quote') | join(' ') }} --no-create-info{% for table in database_backup_structure_only %} --ignore-table={{ database.name | quote }}.{{ table | quote }}{% endfor %} -- {{ database.name | quote }}) {% if database_backup_compression.enabled %}| {{ database_backup_compression.command }} {% endif %}> {{ database_backup_file | quote }}.tmp; then
+    mv -- {{ database_backup_file | quote }}.tmp {{ database_backup_file | quote }}
     {% if mariadb.backup.send_application_event %}
-    application_event_add_metric success_{{ database.name|quote }} 1
+    application_event_add_metric success_{{ database.name | quote }} 1
     {% endif %}
 else
     {% if mariadb.backup.send_application_event %}
-    application_event_add_metric success_{{ database.name|quote }} 0
+    application_event_add_metric success_{{ database.name | quote }} 0
     {% endif %}
     rc=1
 fi
 {% if mariadb.backup.send_application_event %}
-application_event_add_metric time_{{ database.name|quote }} $(($SECONDS-$database_backup_start_time))
+application_event_add_metric time_{{ database.name | quote }} $(($SECONDS-$database_backup_start_time))
 {% endif %}
 {% endif %}
 {% endfor %}
