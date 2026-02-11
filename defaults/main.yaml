@@ -11,7 +11,7 @@ mariadb:
         /usr/local/etc/mysql
       {%- endif -%}
     lib: >-
-      {%- if ansible_system == 'Linux' -%}
+      {%- if ansible_facts['system'] == 'Linux' -%}
         /var/lib/mysql
       {%- else -%}
         /var/db/mysql

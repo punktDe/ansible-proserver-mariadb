@@ -15,7 +15,7 @@
 - name: Check if MariaDB is already runnning
   ansible.builtin.stat:
     path: >-
-      {{ "/var/run/mysqld/mysqld.pid" if ansible_system == "Linux" else "/tmp/mysqld.pid" }}
+      {{ "/var/run/mysqld/mysqld.pid" if ansible_facts['system'] == "Linux" else "/tmp/mysqld.pid" }}
   register: mariadb_pid
   changed_when: false
 
@@ -45,7 +45,7 @@
         enabled: yes
 
     - name: Create directory for galera scripts (FreeBSD)
-      when: ansible_system == "FreeBSD"
+      when: ansible_facts['system'] == "FreeBSD"
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
@@ -57,7 +57,7 @@
         - /var/opt/galera/bin
 
     - name: Template galera_new_cluster (FreeBSD)
-      when: ansible_system == "FreeBSD"
+      when: ansible_facts['system'] == "FreeBSD"
       ansible.builtin.template:
         src: bin/galera_new_cluster
         dest: /var/opt/galera/bin/galera_new_cluster
@@ -65,7 +65,7 @@
         mode: "0755"
 
     - name: Template has_joined_cluster (FreeBSD)
-      when: ansible_system == "FreeBSD"
+      when: ansible_facts['system'] == "FreeBSD"
       ansible.builtin.template:
         src: has_joined_cluster.sh
         dest: /var/opt/galera/bin/has_joined_cluster
@@ -77,14 +77,14 @@
       when: mariadb.galera.initializer
       ansible.builtin.command:
         cmd: >-
-          {{ "/usr/bin/galera_new_cluster" if ansible_system == "Linux" else "/var/opt/galera/bin/galera_new_cluster" }}
+          {{ "/usr/bin/galera_new_cluster" if ansible_facts['system'] == "Linux" else "/var/opt/galera/bin/galera_new_cluster" }}
 
     - name: Wait until cluster is initialized
       changed_when: yes
       when: mariadb.galera.initializer
       ansible.builtin.command:
         cmd: >-
-          {{ lookup('template', 'has_joined_cluster.sh') if ansible_system == "Linux" else "/var/opt/galera/bin/has_joined_cluster" }}
+          {{ lookup('template', 'has_joined_cluster.sh') if ansible_facts['system'] == "Linux" else "/var/opt/galera/bin/has_joined_cluster" }}
 
     - name: Join cluster
       when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
@@ -98,7 +98,7 @@
       changed_when: yes
       ansible.builtin.command:
         cmd: >-
-          {{ lookup('template', 'has_joined_cluster.sh') if ansible_system == "Linux" else "/var/opt/galera/bin/has_joined_cluster" }}
+          {{ lookup('template', 'has_joined_cluster.sh') if ansible_facts['system'] == "Linux" else "/var/opt/galera/bin/has_joined_cluster" }}
 
     - name: Set up garb service
       when: mariadb.galera.arbitrator

@@ -1,6 +1,6 @@
 ---
 - name: Configure MariaDB (FreeBSD)
-  when: ansible_system == 'FreeBSD'
+  when: ansible_facts['system'] == 'FreeBSD'
   block:
     - name: Get MariaDB server version
       check_mode: no

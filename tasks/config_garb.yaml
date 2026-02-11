@@ -1,6 +1,6 @@
 ---
 - name: Confiure garb (garb.cnf)
-  when: mariadb.galera.arbitrator and ansible_system == "Linux"
+  when: mariadb.galera.arbitrator and ansible_facts['system'] == "Linux"
   ansible.builtin.template:
     src: garb.cnf
     dest: /etc/default/garb
@@ -9,7 +9,7 @@
   notify: Restart garb
 
 - name: Confiure garb (rc.conf.d/garb)
-  when: mariadb.galera.arbitrator and ansible_system == "FreeBSD"
+  when: mariadb.galera.arbitrator and ansible_facts['system'] == "FreeBSD"
   ansible.builtin.template:
     src: rc.conf.d/garb
     dest: /usr/local/etc/rc.conf.d/garb
