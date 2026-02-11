@@ -39,6 +39,13 @@ argument_specs:
                 description:
                   - Parent directory that will contain `conf.d`/`mariadb.conf.d`.
                   - Change this only when using custom filesystem layouts.
+              lib:
+                type: str
+                default: >-
+                  {% if ansible_facts['system'] == 'Linux' %}/var/lib/mysql{% else %}/var/db/mysql{% endif %}
+                description:
+                  - Data directory used by MariaDB (e.g. for grastate.dat on Galera nodes).
+                  - Linux uses `/var/lib/mysql`; FreeBSD uses `/var/db/mysql`.
           socket:
             type: str
             default: >-

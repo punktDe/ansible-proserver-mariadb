@@ -12,6 +12,10 @@ endtime=`expr $starttime + $total_maxwait_seconds`
 
 while [ `date +%s` -lt $endtime ]
 do
+    if echo "\q" | mysql 2>&1 >/dev/null | grep -q "Access"
+    then
+            exit 0
+    fi
     if echo "SHOW STATUS LIKE 'wsrep_ready';" | mysql | grep 'ON'
     then
             exit 0
