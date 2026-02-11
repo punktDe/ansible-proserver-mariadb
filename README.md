@@ -47,6 +47,7 @@ Handles database creation, user management and optional automated backups.
 |Option|Description|Type|Required|Default|
 |---|---|---|---|---|
 | `config` | Parent directory that will contain `conf.d`/`mariadb.conf.d`. Change this only when using custom filesystem layouts. | str | no | {% if ansible_facts['system'] == 'Linux' %}/etc/mysql{% else %}/usr/local/etc/mysql{% endif %} |
+| `lib` | Data directory used by MariaDB (e.g. for grastate.dat on Galera nodes). Linux uses `/var/lib/mysql`; FreeBSD uses `/var/db/mysql`. | str | no | {% if ansible_facts['system'] == 'Linux' %}/var/lib/mysql{% else %}/var/db/mysql{% endif %} |
 
 #### Options for `mariadb.repository`
 
