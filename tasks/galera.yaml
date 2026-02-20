@@ -1,20 +1,21 @@
 ---
 - name: Check if grastate.dat exists
   ansible.builtin.stat:
-    path: /var/lib/mysql/grastate.dat
+    path: "{{ mariadb.prefix.lib }}/grastate.dat"
   register: mariadb_grastate
   changed_when: false
 
 - name: Check if cluster is save to bootstrap
   when: mariadb_grastate.stat.exists
   ansible.builtin.slurp:
-    path: /var/lib/mysql/grastate.dat
+    path: "{{ mariadb.prefix.lib }}/grastate.dat"
   register: mariadb_bootstrap
   changed_when: false
 
 - name: Check if MariaDB is already runnning
   ansible.builtin.stat:
-    path: /var/run/mysqld/mysqld.pid
+    path: >-
+      {{ "/var/run/mysqld/mysqld.pid" if ansible_facts['system'] == "Linux" else "/tmp/mysqld.pid" }}
   register: mariadb_pid
   changed_when: false
 
@@ -35,35 +36,69 @@
       or 'Safe to Bootstrap: 1' in mariadb_bootstrap.content | b64decode
       or not mariadb.galera.initializer and not mariadb_pid.stat.exists
   block:
-    - name: Stop MariaDB
+
+    - name: Stop and enable MariaDB
       when: not mariadb.galera.arbitrator
       ansible.builtin.service:
-        name: mariadb
+        name: "{{ mariadb.service }}"
         state: stopped
+        enabled: yes
+
+    - name: Create directory for galera scripts (FreeBSD)
+      when: ansible_facts['system'] == "FreeBSD"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        mode: "0755"
+      loop:
+        - /var/opt
+        - /var/opt/galera
+        - /var/opt/galera/bin
+
+    - name: Template galera_new_cluster (FreeBSD)
+      when: ansible_facts['system'] == "FreeBSD"
+      ansible.builtin.template:
+        src: bin/galera_new_cluster
+        dest: /var/opt/galera/bin/galera_new_cluster
+        owner: root
+        mode: "0755"
+
+    - name: Template has_joined_cluster (FreeBSD)
+      when: ansible_facts['system'] == "FreeBSD"
+      ansible.builtin.template:
+        src: has_joined_cluster.sh
+        dest: /var/opt/galera/bin/has_joined_cluster
+        owner: root
+        mode: "0755"
 
     - name: Initialize cluster
       changed_when: yes
       when: mariadb.galera.initializer
       ansible.builtin.command:
-        cmd: /usr/bin/galera_new_cluster
+        cmd: >-
+          {{ "/usr/bin/galera_new_cluster" if ansible_facts['system'] == "Linux" else "/var/opt/galera/bin/galera_new_cluster" }}
 
     - name: Wait until cluster is initialized
       changed_when: yes
       when: mariadb.galera.initializer
-      ansible.builtin.shell:
-        cmd: "{{ lookup('template', 'has_joined_cluster.sh') }}"
+      ansible.builtin.command:
+        cmd: >-
+          {{ lookup('template', 'has_joined_cluster.sh') if ansible_facts['system'] == "Linux" else "/var/opt/galera/bin/has_joined_cluster" }}
 
     - name: Join cluster
       when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
       ansible.builtin.service:
-        name: mariadb
+        name: "{{ mariadb.service }}"
         state: started
+
 
     - name: Wait until node has joined cluster
       when: not mariadb.galera.initializer and not mariadb.galera.arbitrator
       changed_when: yes
-      ansible.builtin.shell:
-        cmd: "{{ lookup('template', 'has_joined_cluster.sh') }}"
+      ansible.builtin.command:
+        cmd: >-
+          {{ lookup('template', 'has_joined_cluster.sh') if ansible_facts['system'] == "Linux" else "/var/opt/galera/bin/has_joined_cluster" }}
 
     - name: Set up garb service
       when: mariadb.galera.arbitrator
@@ -87,6 +122,12 @@
             insertafter: "^ExecStart=.*"
             line: "WorkingDirectory=/var/lib/garbd"
 
+        - name: Stop and disable MariaDB
+          ansible.builtin.service:
+            name: "{{ mariadb.service }}"
+            state: stopped
+            enabled: no
+
         - name: Enable garb
           ansible.builtin.service:
             name: garb
@@ -106,11 +147,11 @@
     - name: Restart initializer node to stop bootstrap and rejoin cluster
       when: mariadb.galera.initializer
       ansible.builtin.service:
-        name: mariadb
+        name: "{{ mariadb.service }}"
         state: restarted
 
     - name: Wait that node has rejoined cluster
       when: mariadb.galera.initializer
       changed_when: yes
-      ansible.builtin.shell:
+      ansible.builtin.command:
         cmd: "{{ lookup('template', 'has_joined_cluster.sh') }}"

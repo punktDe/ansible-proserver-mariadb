@@ -1,30 +1,30 @@
 ---
+- name: Configure MariaDB (FreeBSD)
+  when: ansible_facts['system'] == 'FreeBSD'
+  block:
+    - name: Get MariaDB server version
+      check_mode: no
+      ansible.builtin.shell:
+        cmd: >-
+          /usr/local/libexec/mysqld --version |
+          python3 -c
+          'import sys, re; print(re.search("Ver[\s\t]*([0-9]+\.[0-9]+)", sys.stdin.readline()).group(1))'
+      changed_when: no
+      register: mariadb_get_server_version_result
+
+    - name: Check if legacy config location must be used
+      ansible.builtin.set_fact:
+        mariadb_use_legacy_config_location_result: "{{ mariadb_get_server_version_result.stdout is version('10.5', '<') }}"
+
+    - name: Remove obsolete my.cnf
+      when: not mariadb_use_legacy_config_location_result
+      ansible.builtin.file:
+        path: "/usr/local/etc/my.cnf"
+        state: absent
+
 - name: Handle MariaDB nodes
   when: not mariadb.galera.arbitrator
   block:
-    - name: Configure MariaDB (FreeBSD)
-      when: ansible_facts['system'] == 'FreeBSD'
-      block:
-        - name: Get MariaDB server version
-          check_mode: no
-          ansible.builtin.shell:
-            cmd: >-
-              /usr/local/libexec/mysqld --version |
-              python3 -c
-              'import sys, re; print(re.search("Ver[\s\t]*([0-9]+\.[0-9]+)", sys.stdin.readline()).group(1))'
-          changed_when: no
-          register: mariadb_get_server_version_result
-
-        - name: Check if legacy config location must be used
-          ansible.builtin.set_fact:
-            mariadb_use_legacy_config_location_result: "{{ mariadb_get_server_version_result.stdout is version('10.5', '<') }}"
-
-        - name: Remove obsolete my.cnf
-          when: not mariadb_use_legacy_config_location_result
-          ansible.builtin.file:
-            path: "/usr/local/etc/my.cnf"
-            state: absent
-
     - name: Configure MariaDB (my.cnf)
       community.general.ini_file:
         path: "{{ config_filepath }}"
