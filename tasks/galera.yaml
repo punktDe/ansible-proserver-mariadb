@@ -123,6 +123,7 @@
             line: "WorkingDirectory=/var/lib/garbd"
 
         - name: Stop and disable MariaDB
+          when: ansible_facts['system'] == 'FreeBSD'
           ansible.builtin.service:
             name: "{{ mariadb.service }}"
             state: stopped
