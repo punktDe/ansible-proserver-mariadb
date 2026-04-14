@@ -122,7 +122,16 @@
             insertafter: "^ExecStart=.*"
             line: "WorkingDirectory=/var/lib/garbd"
 
+        - name: Set service name fact
+          ansible.builtin.set_fact:
+            mariadb_service_name: >-
+              "{{ mariadb.service + '.service' if ansible_facts['service_mgr'] == 'systemd' else mariadb.service }}"
+
+        - name: Populate service facts
+          ansible.builtin.service_facts:
+
         - name: Stop and disable MariaDB
+          when: mariadb_service in ansible_facts['services']
           ansible.builtin.service:
             name: "{{ mariadb.service }}"
             state: stopped
