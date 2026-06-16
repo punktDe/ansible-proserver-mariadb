@@ -104,11 +104,10 @@
       when: mariadb.galera.arbitrator
       block:
         - name: Create garb working directory
-          when: ansible_facts['system'] == 'Linux'
           ansible.builtin.file:
-            path: /var/lib/garbd
+            path: "{{ '/var/lib/garbd' if ansible_facts['system'] == 'Linux' else '/var/db/garbd' }}"
             owner: nobody
-            group: nogroup
+            group: "{{ 'nogroup' if ansible_facts['system'] == 'Linux' else 'nobody' }}"
             mode: 0755
             state: directory
 
