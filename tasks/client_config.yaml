@@ -30,7 +30,7 @@
 
     - name: Set root password in database
       ignore_errors: "{{ ansible_check_mode }}"
-      community.mysql.mysql_user:
+      ansible.mysql.mysql_user:
         login_user: root
         login_password: "{{ mariadb_root_password_slurp_result.content | b64decode | trim }}"
         check_implicit_admin: yes

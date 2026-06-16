@@ -1,7 +1,7 @@
 ---
 - name: Create databases
   ignore_errors: "{{ ansible_check_mode }}"
-  community.mysql.mysql_db:
+  ansible.mysql.mysql_db:
     name: "{{ db.value.name }}"
     encoding: "{{ encoding }}"
     collation: "{{ collation }}"
@@ -37,7 +37,7 @@
       loop: "{{ mariadb_createdb_result.results }}"
 
     - name: Restore databases
-      community.mysql.mysql_db:
+      ansible.mysql.mysql_db:
         state: import
         target: "{{ tmpfile }}"
         name: "{{ db.value.name }}"
