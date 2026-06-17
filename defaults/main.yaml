@@ -16,6 +16,13 @@ mariadb:
       {%- else -%}
         /var/db/mysql
       {%- endif -%}
+    garb:
+      working_directory: >-
+        {%- if ansible_facts['system'] == 'Linux' -%}
+          /var/lib/garbd
+        {%- else -%}
+          /var/db/garbd
+        {%- endif -%}
   socket: >-
     {%- if ansible_facts['system'] == 'Linux' -%}
       /run/mysqld/mysqld.sock
@@ -79,10 +86,3 @@ mariadb_galera_cluster_nodes: >-
       {%- set _ = cluster_nodes.append(node) -%}
     {%- endif -%}
   {%- endfor -%}
-  {{- cluster_nodes -}}
-mariadb_garb_working_directory: >-
-  {%- if ansible_facts['system'] == 'Linux' -%}
-    /var/lib/garbd
-  {%- else -%}
-    /var/db/garbd
-  {%- endif -%}
