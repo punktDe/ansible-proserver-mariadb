@@ -46,6 +46,19 @@ argument_specs:
                 description:
                   - Data directory used by MariaDB (e.g. for grastate.dat on Galera nodes).
                   - Linux uses `/var/lib/mysql`; FreeBSD uses `/var/db/mysql`.
+              garb:
+                type: dict
+                default: {}
+                description:
+                  - Settings for the garbd arbitrator service.
+                options:
+                  working_directory:
+                    type: str
+                    default: >-
+                      {% if ansible_facts['system'] == 'Linux' %}/var/lib/garbd{% else %}/var/db/garbd{% endif %}
+                    description:
+                      - Working directory used for the garbd arbitrator service.
+                      - Linux uses `/var/lib/garbd`; FreeBSD uses `/var/db/garbd`.
           socket:
             type: str
             default: >-

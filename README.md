@@ -48,6 +48,13 @@ Handles database creation, user management and optional automated backups.
 |---|---|---|---|---|
 | `config` | Parent directory that will contain `conf.d`/`mariadb.conf.d`. Change this only when using custom filesystem layouts. | str | no | {% if ansible_facts['system'] == 'Linux' %}/etc/mysql{% else %}/usr/local/etc/mysql{% endif %} |
 | `lib` | Data directory used by MariaDB (e.g. for grastate.dat on Galera nodes). Linux uses `/var/lib/mysql`; FreeBSD uses `/var/db/mysql`. | str | no | {% if ansible_facts['system'] == 'Linux' %}/var/lib/mysql{% else %}/var/db/mysql{% endif %} |
+| `garb` | Settings for the garbd arbitrator service. | dict of 'garb' options | no | {} |
+
+#### Options for `mariadb.prefix.garb`
+
+|Option|Description|Type|Required|Default|
+|---|---|---|---|---|
+| `working_directory` | Working directory used for the garbd arbitrator service. Linux uses `/var/lib/garbd`; FreeBSD uses `/var/db/garbd`. | str | no | {% if ansible_facts['system'] == 'Linux' %}/var/lib/garbd{% else %}/var/db/garbd{% endif %} |
 
 #### Options for `mariadb.repository`
 
