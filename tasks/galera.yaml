@@ -105,7 +105,7 @@
       block:
         - name: Create garb working directory
           ansible.builtin.file:
-            path: "{{ '/var/lib/garbd' if ansible_facts['system'] == 'Linux' else '/var/db/garbd' }}"
+            path: "{{ mariadb_garb_working_directory }}"
             owner: nobody
             group: "{{ 'nogroup' if ansible_facts['system'] == 'Linux' else 'nobody' }}"
             mode: 0755
@@ -119,7 +119,7 @@
             path: /usr/lib/systemd/system/garb.service
             regexp: "^WorkingDirectory"
             insertafter: "^ExecStart=.*"
-            line: "WorkingDirectory=/var/lib/garbd"
+            line: "WorkingDirectory={{ mariadb_garb_working_directory }}"
 
         - name: Set service name fact
           ansible.builtin.set_fact:

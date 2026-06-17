@@ -80,3 +80,9 @@ mariadb_galera_cluster_nodes: >-
     {%- endif -%}
   {%- endfor -%}
   {{- cluster_nodes -}}
+mariadb_garb_working_directory: >-
+  {%- if ansible_facts['system'] == 'Linux' -%}
+    /var/lib/garbd
+  {%- else -%}
+    /var/db/garbd
+  {%- endif -%}
