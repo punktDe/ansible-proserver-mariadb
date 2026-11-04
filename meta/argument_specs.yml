@@ -100,6 +100,7 @@ argument_specs:
               - Declarative representation of the contents that should end up in `zz-ansible.cnf`.
               - Keys correspond to section names (`mysqld`, `mysqld_safe`, `galera`, ...); nested keys represent option/value pairs.
               - Values set to `null` remove the option from the rendered file.
+              - On FreeBSD, `loose-innodb_buffer_pool_size_max = 8M` is added unless set here, so MariaDB uses `innodb_buffer_pool_size` as maximum instead of reserving 8 TiB.
           database_defaults:
             type: dict
             description:
