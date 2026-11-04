@@ -41,6 +41,25 @@
         config_filepath: "{% if ansible_facts['system'] == 'FreeBSD' and mariadb_use_legacy_config_location_result %}/usr/local/etc/my.cnf{% else %}{{ mariadb.prefix.config }}/conf.d/zz-ansible.cnf{% endif %}"
       notify: Restart MariaDB
 
+    # below the pool size: MariaDB uses innodb_buffer_pool_size as max (loose-: ignored by older versions)
+    - name: Ensure MariaDB does not reserve 8 TiB for the InnoDB buffer pool (FreeBSD)
+      when:
+        - ansible_facts['system'] == 'FreeBSD'
+        - not mariadb_use_legacy_config_location_result
+        - "'loose-innodb_buffer_pool_size_max' not in mariadb['my.cnf']['mysqld'] | default({}, true)"
+      community.general.ini_file:
+        path: "{{ mariadb.prefix.config }}/conf.d/zz-ansible.cnf"
+        section: mysqld
+        option: loose-innodb_buffer_pool_size_max
+        value: 8M
+        state: "{{ 'absent' if mariadb_max_set_in_my_cnf else 'present' }}"
+        owner: root
+        mode: "0644"
+      vars:
+        mariadb_max_set_in_my_cnf: >-
+          {{ mariadb['my.cnf'] | mariadb_ini_helper | map(attribute='option')
+             | select('match', '^(loose[-_])?innodb[-_]buffer[-_]pool[-_]size[-_]max$') | list | length > 0 }}
+
     - name: Ensure MariaDB config set by Ansible overrules package defaults
       when: "ansible_facts['system'] == 'Linux' and mariadb['my.cnf'] | length > 0"
       ansible.builtin.file:
