@@ -46,6 +46,7 @@
       when:
         - ansible_facts['system'] == 'FreeBSD'
         - not mariadb_use_legacy_config_location_result
+        - "'loose-innodb_buffer_pool_size_max' not in mariadb['my.cnf']['mysqld'] | default({}, true)"
       community.general.ini_file:
         path: "{{ mariadb.prefix.config }}/conf.d/zz-ansible.cnf"
         section: mysqld
