@@ -80,9 +80,15 @@ mariadb_root_password: >-
     {{- mariadb_root_password_slurp_result.content | b64decode | trim -}}
   {%- endif -%}
 mariadb_galera_cluster_nodes: >-
+  {#- MariaDB reads wsrep_cluster_name from both the [galera] and the [mysqld] section -#}
+  {%- macro cluster_name(mariadb_vars) -%}
+    {%- set cnf = (mariadb_vars | default({}))['my.cnf'] | default({}) -%}
+    {{- (cnf.galera | default({})).wsrep_cluster_name | default((cnf.mysqld | default({})).wsrep_cluster_name | default('')) -}}
+  {%- endmacro -%}
   {%- set cluster_nodes = [] -%}
   {%- for node, node_vars in hostvars.items() -%}
-    {%- if (((node_vars.mariadb | default({}))['my.cnf'] | default({}))['galera'] | default({}))['wsrep_cluster_name'] | default('') == ((mariadb['my.cnf'] | default({})).galera | default({})).wsrep_cluster_name | default('') -%}
+    {%- if cluster_name(node_vars.mariadb) == cluster_name(mariadb) -%}
       {%- set _ = cluster_nodes.append(node) -%}
     {%- endif -%}
   {%- endfor -%}
+  {{- cluster_nodes -}}
